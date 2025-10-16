@@ -1,6 +1,6 @@
 // This is a mock API service to simulate backend interactions.
 // In a real application, these functions would make network requests.
-import { User, Permission, AdminRole, Note, UserSession, Bonus, AuditLog, UserDocument, SupportTicket, TicketReply, EmailTemplate, Segment, GamingActivity, TimelineEvent, Task, WorkflowRule, IPWhitelistEntry, ABTest, Wallet, Affiliate, Achievement, Mission, Integration, ApiKey } from '../types';
+import { User, Permission, AdminRole, Note, UserSession, Bonus, AuditLog, UserDocument, SupportTicket, TicketReply, EmailTemplate, Segment, GamingActivity, TimelineEvent, Task, WorkflowRule, IPWhitelistEntry, ABTest, Wallet, Affiliate, Achievement, Mission, Integration, ApiKey, LoyaltyTier, Promotion, RiskAssessment, RiskFactor } from '../types';
 
 let AUTH_TOKEN: string | null = null;
 
@@ -10,13 +10,9 @@ export const setAuthToken = (token: string | null) => {
 
 // A helper to simulate async API calls
 const simulateRequest = <T,>(data: T, delay = 500): Promise<{ data: T, message?: string }> => {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     setTimeout(() => {
-      if (false) { // 5% chance of a random error
-        reject(new Error("A random network error occurred."));
-      } else {
-        resolve({ data });
-      }
+      resolve({ data });
     }, delay);
   });
 };
@@ -24,27 +20,34 @@ const simulateRequest = <T,>(data: T, delay = 500): Promise<{ data: T, message?:
 export const ALL_PERMISSIONS: Permission[] = [
     'can_view_dashboard', 'can_manage_users', 'can_suspend_users', 'can_ban_users',
     'can_edit_user_details', 'can_view_user_financials', 'can_manage_notes',
-    'can_manage_wallets', 'can_grant_bonuses', 'can_manage_rg_limits',
+    'can_manage_wallets', 'can_grant_bonuses', 'can_manage_promotions', 'can_manage_rg_limits',
     'can_view_audit_logs', 'can_manage_roles', 'can_manage_support_tickets',
     'can_manage_email_templates', 'can_view_analytics', 'can_manage_automation',
     'can_manage_platform_settings', 'can_manage_gdpr', 'can_manage_ab_tests',
     'can_manage_affiliates', 'can_manage_gamification', 'can_manage_api_keys',
 ];
 
+let MOCK_LOYALTY_TIERS: LoyaltyTier[] = [
+    { id: 'tier_bronze', name: 'Bronze', pointsRequired: 0, benefits: ['Standard Support', 'Basic Promotions'] },
+    { id: 'tier_silver', name: 'Silver', pointsRequired: 1000, benefits: ['Priority Support', 'Weekly Free Spins', '5% Cashback'] },
+    { id: 'tier_gold', name: 'Gold', pointsRequired: 5000, benefits: ['Dedicated Account Manager', 'Exclusive Bonuses', '10% Cashback'] },
+    { id: 'tier_platinum', name: 'Platinum', pointsRequired: 20000, benefits: ['VIP Host', 'Luxury Gifts', '15% Cashback', 'Faster Withdrawals'] },
+];
+
 // --- In-memory data for demonstration ---
 let MOCK_USERS: User[] = [
     // FIX: Added avgBetSize property
-    { id: 'user_1', email: 'player1@test.com', username: 'PlayerOne', role: 'user', status: 'active', kycStatus: 'verified', createdAt: new Date(2023, 4, 15).toISOString(), tags: ['VIP'], isHighRisk: false, ltv: 5000, ggr: 1000, avgBetSize: 25.50, lastLoginAt: new Date().toISOString(), preferences: { language: 'en', timezone: 'UTC', notificationEmail: true, notificationSms: false, notificationPush: true, theme: 'dark' }, responsibleGaming: { depositLimit: 5000, lossLimit: null, sessionTimeLimit: null }, customFields: {}, riskScore: 10, has2FA: false, churnPredictionScore: 5, referredByAffiliateId: 'aff_1', achievements: ['ach_1', 'ach_3'] },
+    { id: 'user_1', email: 'player1@test.com', username: 'PlayerOne', role: 'user', status: 'active', kycStatus: 'verified', createdAt: new Date(2023, 4, 15).toISOString(), tags: ['VIP'], isHighRisk: false, ltv: 5000, ggr: 1000, avgBetSize: 25.50, lastLoginAt: new Date().toISOString(), preferences: { language: 'en', timezone: 'UTC', notificationEmail: true, notificationSms: false, notificationPush: true, theme: 'dark' }, responsibleGaming: { depositLimit: 5000, lossLimit: null, sessionTimeLimit: null }, customFields: {}, riskScore: 10, has2FA: false, churnPredictionScore: 5, referredByAffiliateId: 'aff_1', achievements: ['ach_1', 'ach_3'], loyaltyPoints: 6250, loyaltyTierId: 'tier_gold' },
     // FIX: Added avgBetSize property
-    { id: 'user_2', email: 'player2@test.com', username: 'PlayerTwo', role: 'user', status: 'suspended', kycStatus: 'pending', createdAt: new Date(2023, 5, 20).toISOString(), tags: [], isHighRisk: true, ltv: 100, ggr: -50, avgBetSize: 5.20, lastLoginAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), preferences: { language: 'en', timezone: 'UTC', notificationEmail: true, notificationSms: false, notificationPush: true, theme: 'dark' }, responsibleGaming: { depositLimit: 100, lossLimit: 50, sessionTimeLimit: 60 }, customFields: {}, riskScore: 85, has2FA: false, churnPredictionScore: 92, achievements: [] },
+    { id: 'user_2', email: 'player2@test.com', username: 'PlayerTwo', role: 'user', status: 'suspended', kycStatus: 'pending', createdAt: new Date(2023, 5, 20).toISOString(), tags: [], isHighRisk: true, ltv: 100, ggr: -50, avgBetSize: 5.20, lastLoginAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), preferences: { language: 'en', timezone: 'UTC', notificationEmail: true, notificationSms: false, notificationPush: true, theme: 'dark' }, responsibleGaming: { depositLimit: 100, lossLimit: 50, sessionTimeLimit: 60 }, customFields: {}, riskScore: 85, has2FA: false, churnPredictionScore: 92, achievements: [], loyaltyPoints: 150, loyaltyTierId: 'tier_bronze' },
     // FIX: Added avgBetSize property
-    { id: 'admin_1', email: 'admin@crm.com', username: 'AdminUser', role: 'admin', adminRoleId: 'role_super_admin', status: 'active', kycStatus: 'verified', createdAt: new Date(2023, 0, 1).toISOString(), tags: [], isHighRisk: false, ltv: 0, ggr: 0, avgBetSize: 0, lastLoginAt: new Date().toISOString(), preferences: { language: 'en', timezone: 'UTC', notificationEmail: true, notificationSms: false, notificationPush: true, theme: 'dark' }, responsibleGaming: { depositLimit: null, lossLimit: null, sessionTimeLimit: null }, customFields: {}, has2FA: true, notificationSettings: { new_vip: { email: true, inApp: true }, large_deposit: { email: true, inApp: false }, high_risk_flag: { email: true, inApp: true }, new_support_ticket: { email: false, inApp: true } }, achievements: [] },
+    { id: 'admin_1', email: 'admin@crm.com', username: 'AdminUser', role: 'admin', adminRoleId: 'role_super_admin', status: 'active', kycStatus: 'verified', createdAt: new Date(2023, 0, 1).toISOString(), tags: [], isHighRisk: false, ltv: 0, ggr: 0, avgBetSize: 0, lastLoginAt: new Date().toISOString(), preferences: { language: 'en', timezone: 'UTC', notificationEmail: true, notificationSms: false, notificationPush: true, theme: 'dark' }, responsibleGaming: { depositLimit: null, lossLimit: null, sessionTimeLimit: null }, customFields: {}, has2FA: true, notificationSettings: { new_vip: { email: true, inApp: true }, large_deposit: { email: true, inApp: false }, high_risk_flag: { email: true, inApp: true }, new_support_ticket: { email: false, inApp: true } }, achievements: [], loyaltyPoints: 0, loyaltyTierId: 'tier_bronze' },
     // FIX: Added full user for findLinkedAccounts mock
-    { id: 'user_3', email: 'player3@test.com', username: 'SimilarPlayer', role: 'user', status: 'active', kycStatus: 'verified', createdAt: new Date(2023, 6, 1).toISOString(), tags: [], isHighRisk: false, ltv: 150, ggr: 20, avgBetSize: 10, lastLoginAt: new Date().toISOString(), preferences: { language: 'en', timezone: 'UTC', notificationEmail: true, notificationSms: false, notificationPush: true, theme: 'dark' }, responsibleGaming: { depositLimit: 1000, lossLimit: null, sessionTimeLimit: null }, customFields: {}, riskScore: 20, has2FA: false, churnPredictionScore: 35, referredByAffiliateId: 'aff_2', achievements: ['ach_1'] },
+    { id: 'user_3', email: 'player3@test.com', username: 'SimilarPlayer', role: 'user', status: 'active', kycStatus: 'verified', createdAt: new Date(2023, 6, 1).toISOString(), tags: [], isHighRisk: false, ltv: 150, ggr: 20, avgBetSize: 10, lastLoginAt: new Date().toISOString(), preferences: { language: 'en', timezone: 'UTC', notificationEmail: true, notificationSms: false, notificationPush: true, theme: 'dark' }, responsibleGaming: { depositLimit: 1000, lossLimit: null, sessionTimeLimit: null }, customFields: {}, riskScore: 20, has2FA: false, churnPredictionScore: 35, referredByAffiliateId: 'aff_2', achievements: ['ach_1'], loyaltyPoints: 1100, loyaltyTierId: 'tier_silver' },
     // FIX: Added avgBetSize property
-    { id: 'admin_2', email: 'marketing@crm.com', username: 'Marketer', role: 'admin', adminRoleId: 'role_marketing_mgr', status: 'active', kycStatus: 'verified', createdAt: new Date(2023, 2, 1).toISOString(), tags: [], isHighRisk: false, ltv: 0, ggr: 0, avgBetSize: 0, lastLoginAt: new Date().toISOString(), preferences: { language: 'en', timezone: 'UTC', notificationEmail: true, notificationSms: false, notificationPush: true, theme: 'dark' }, responsibleGaming: { depositLimit: null, lossLimit: null, sessionTimeLimit: null }, customFields: {}, has2FA: false, achievements: [] },
+    { id: 'admin_2', email: 'marketing@crm.com', username: 'Marketer', role: 'admin', adminRoleId: 'role_marketing_mgr', status: 'active', kycStatus: 'verified', createdAt: new Date(2023, 2, 1).toISOString(), tags: [], isHighRisk: false, ltv: 0, ggr: 0, avgBetSize: 0, lastLoginAt: new Date().toISOString(), preferences: { language: 'en', timezone: 'UTC', notificationEmail: true, notificationSms: false, notificationPush: true, theme: 'dark' }, responsibleGaming: { depositLimit: null, lossLimit: null, sessionTimeLimit: null }, customFields: {}, has2FA: false, achievements: [], loyaltyPoints: 0, loyaltyTierId: 'tier_bronze' },
     // FIX: Added avgBetSize property
-    { id: 'admin_3', email: 'support@crm.com', username: 'SupportSam', role: 'admin', adminRoleId: 'role_support_agent', status: 'active', kycStatus: 'verified', createdAt: new Date(2023, 3, 1).toISOString(), tags: [], isHighRisk: false, ltv: 0, ggr: 0, avgBetSize: 0, lastLoginAt: new Date().toISOString(), preferences: { language: 'en', timezone: 'UTC', notificationEmail: true, notificationSms: false, notificationPush: true, theme: 'dark' }, responsibleGaming: { depositLimit: null, lossLimit: null, sessionTimeLimit: null }, customFields: {}, has2FA: false, achievements: [] },
+    { id: 'admin_3', email: 'support@crm.com', username: 'SupportSam', role: 'admin', adminRoleId: 'role_support_agent', status: 'active', kycStatus: 'verified', createdAt: new Date(2023, 3, 1).toISOString(), tags: [], isHighRisk: false, ltv: 0, ggr: 0, avgBetSize: 0, lastLoginAt: new Date().toISOString(), preferences: { language: 'en', timezone: 'UTC', notificationEmail: true, notificationSms: false, notificationPush: true, theme: 'dark' }, responsibleGaming: { depositLimit: null, lossLimit: null, sessionTimeLimit: null }, customFields: {}, has2FA: false, achievements: [], loyaltyPoints: 0, loyaltyTierId: 'tier_bronze' },
 ];
 
 let MOCK_ROLES: AdminRole[] = [
@@ -60,7 +63,7 @@ let MOCK_ROLES: AdminRole[] = [
         description: 'Manages campaigns, bonuses, affiliates, and analytics.', 
         permissions: [
             'can_view_dashboard', 'can_view_analytics', 'can_manage_email_templates', 
-            'can_grant_bonuses', 'can_manage_affiliates', 'can_manage_gamification', 
+            'can_grant_bonuses', 'can_manage_promotions', 'can_manage_affiliates', 'can_manage_gamification', 
             'can_manage_ab_tests', 'can_manage_users'
         ] 
     },
@@ -119,7 +122,47 @@ let MOCK_API_KEYS: ApiKey[] = [
     { id: 'key_1', key: 'sk_live_mock_abcdef123456', description: 'Data Warehouse Sync', createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(), lastUsedAt: new Date().toISOString() },
     { id: 'key_2', key: 'sk_live_mock_ghijkl789012', description: 'Affiliate Payout Script', createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(), lastUsedAt: null },
 ];
+
+let MOCK_PROMOTIONS: Promotion[] = [
+    { id: 'promo_1', name: 'Welcome Freespins', description: '100 Free Spins on first deposit for all new players.', type: 'Free Spins Offer', status: 'Active', startDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(), endDate: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000).toISOString(), minDeposit: 20 },
+    { id: 'promo_2', name: 'Weekend Reload', description: '50% deposit match up to $200 every weekend.', type: 'Deposit Match', status: 'Active', startDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), endDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(), bonusCode: 'RELOAD50' },
+    { id: 'promo_3', name: 'Summer Cashback', description: '10% cashback on all losses during the month of July.', type: 'Cashback Offer', status: 'Scheduled', startDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(), endDate: new Date(Date.now() + 35 * 24 * 60 * 60 * 1000).toISOString() },
+    { id: 'promo_4', name: 'Spring Fling Tournament', description: 'Slot tournament with a $10,000 prize pool.', type: 'Free Spins Offer', status: 'Expired', startDate: new Date(Date.now() - 40 * 24 * 60 * 60 * 1000).toISOString(), endDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString() },
+];
+
+let MOCK_GAMING_ACTIVITIES: GamingActivity[] = [
+    { id: 'act_1', userId: 'user_1', type: 'deposit', amount: 500, currency: 'USD', timestamp: new Date(Date.now() - 2 * 60 * 1000).toISOString() },
+    { id: 'act_2', userId: 'user_1', type: 'bet', amount: 25, currency: 'USD', game: 'Blackjack', timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString() },
+    { id: 'act_3', userId: 'user_1', type: 'win', amount: 50, currency: 'USD', game: 'Blackjack', timestamp: new Date(Date.now() - 6 * 60 * 1000).toISOString() },
+    { id: 'act_4', userId: 'user_2', type: 'deposit', amount: 20, currency: 'USD', timestamp: new Date(Date.now() - 10 * 60 * 1000).toISOString() },
+    { id: 'act_5', userId: 'user_2', type: 'loss', amount: 5, currency: 'USD', game: 'Slots', timestamp: new Date(Date.now() - 12 * 60 * 1000).toISOString() },
+    { id: 'act_6', userId: 'user_1', type: 'jackpot', amount: 2500, currency: 'USD', game: 'Slots', timestamp: new Date(Date.now() - 15 * 60 * 1000).toISOString() },
+    { id: 'act_7', userId: 'user_1', type: 'withdrawal', amount: 1000, currency: 'USD', timestamp: new Date(Date.now() - 20 * 60 * 1000).toISOString() },
+];
+
+let MOCK_SEGMENTS: Segment[] = [
+    { id: 'seg_1', name: 'VIP Players', description: 'Users with LTV > $1,000', userCount: 1, rules: { ltv: { greater_than: 1000 } } },
+    { id: 'seg_2', name: 'High Risk', description: 'Users with a risk score above 75.', userCount: 1, rules: { riskScore: { greater_than: 75 } } },
+    { id: 'seg_3', name: 'Potential Churn', description: 'Users with a churn prediction score over 80.', userCount: 1, rules: { churnPredictionScore: { greater_than: 80 } } },
+];
 // ... other mock data stores
+const MOCK_RISK_FACTORS: Record<string, RiskFactor> = {
+    'vpn': { id: 'rf_1', description: 'Connection from VPN/Proxy', severity: 'medium' },
+    'multi_ip': { id: 'rf_2', description: 'Multiple accounts linked to IP', severity: 'high' },
+    'deposit_velocity': { id: 'rf_3', description: 'Unusual deposit velocity', severity: 'medium' },
+    'country_mismatch': { id: 'rf_4', description: 'Geolocation and document country mismatch', severity: 'high' }
+};
+
+const MOCK_RISK_ASSESSMENTS: Record<string, RiskAssessment> = {
+    'user_1': { score: 10, level: 'Low', factors: [] },
+    'user_2': {
+        score: 85,
+        level: 'High',
+        factors: [MOCK_RISK_FACTORS.multi_ip, MOCK_RISK_FACTORS.deposit_velocity, MOCK_RISK_FACTORS.country_mismatch]
+    },
+    'user_3': { score: 20, level: 'Low', factors: [MOCK_RISK_FACTORS.multi_ip] }
+};
+
 
 // --- MOCK API FUNCTIONS ---
 
@@ -130,7 +173,7 @@ export const login = (email: string, password: string) => {
 };
 export const register = (email: string, username: string, password: string) => {
     // FIX: Added avgBetSize property
-    const newUser: User = { id: `user_${Date.now()}`, email, username, role: 'user', status: 'active', kycStatus: 'none', createdAt: new Date().toISOString(), tags: [], isHighRisk: false, ltv: 0, ggr: 0, avgBetSize: 0, lastLoginAt: new Date().toISOString(), preferences: { language: 'en', timezone: 'UTC', notificationEmail: true, notificationSms: false, notificationPush: true, theme: 'dark' }, responsibleGaming: { depositLimit: null, lossLimit: null, sessionTimeLimit: null }, customFields: {}, riskScore: 5, has2FA: false, achievements: [] };
+    const newUser: User = { id: `user_${Date.now()}`, email, username, role: 'user', status: 'active', kycStatus: 'none', createdAt: new Date().toISOString(), tags: [], isHighRisk: false, ltv: 0, ggr: 0, avgBetSize: 0, lastLoginAt: new Date().toISOString(), preferences: { language: 'en', timezone: 'UTC', notificationEmail: true, notificationSms: false, notificationPush: true, theme: 'dark' }, responsibleGaming: { depositLimit: null, lossLimit: null, sessionTimeLimit: null }, customFields: {}, riskScore: 5, has2FA: false, achievements: [], loyaltyPoints: 0, loyaltyTierId: 'tier_bronze' };
     MOCK_USERS.push(newUser);
     return simulateRequest({ token: 'mock-jwt-token', userId: newUser.id });
 };
@@ -271,6 +314,8 @@ export const getAffiliates = () => simulateRequest([...MOCK_AFFILIATES]);
 export const getAchievements = () => simulateRequest([...MOCK_ACHIEVEMENTS]);
 export const getMissions = () => simulateRequest([...MOCK_MISSIONS]);
 export const getIntegrations = () => simulateRequest([...MOCK_INTEGRATIONS]);
+export const getLoyaltyTiers = () => simulateRequest([...MOCK_LOYALTY_TIERS]);
+export const getPromotions = () => simulateRequest([...MOCK_PROMOTIONS]);
 export const updateIntegration = (id: 'slack' | 'tableau', isConnected: boolean) => {
     const integration = MOCK_INTEGRATIONS.find(i => i.id === id);
     if (integration) {
@@ -278,6 +323,18 @@ export const updateIntegration = (id: 'slack' | 'tableau', isConnected: boolean)
         return simulateRequest(integration);
     }
     return Promise.reject(new Error("Integration not found"));
+};
+
+// --- RISK & FRAUD ---
+export const getRiskAssessmentForUser = (userId: string) => {
+    const assessment = MOCK_RISK_ASSESSMENTS[userId];
+    if (assessment) {
+        return simulateRequest(assessment);
+    }
+    // Return a default low-risk assessment if none is found
+    // FIX: Explicitly type the default assessment to fix a type inference issue.
+    const defaultAssessment: RiskAssessment = { score: 5, level: 'Low', factors: [] };
+    return simulateRequest(defaultAssessment);
 };
 
 
@@ -315,7 +372,7 @@ export const findLinkedAccounts = (userId: string) => {
 // FIX: Correctly typed mock return value
 export const getUserTimeline = (userId: string) => simulateRequest<TimelineEvent[]>([{ id: 'event_1', date: new Date().toISOString(), timelineType: 'activity', type: 'deposit', amount: 100, currency: 'USD' }]);
 // FIX: Add 'rules' to satisfy Segment type
-export const getSegments = () => simulateRequest<Segment[]>([{ id: 'seg_1', name: 'VIP Players', description: 'Users with LTV > $10,000', userCount: 42, rules: {} }]);
+export const getSegments = () => simulateRequest<Segment[]>(MOCK_SEGMENTS);
 // FIX: Correctly typed mock return value
 export const getSupportTickets = () => simulateRequest<SupportTicket[]>([{ id: 'ticket_1', userId: 'user_1', userUsername: 'PlayerOne', subject: 'Withdrawal issue', description: '...', status: 'Open', priority: 'High', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), assignedToAdminUsername: 'SupportAdmin' }]);
 // FIX: Correctly typed mock return value
@@ -328,7 +385,8 @@ export const createEmailTemplate = (data: any) => simulateRequest<EmailTemplate>
 export const updateEmailTemplate = (templateId: string, data: any) => simulateRequest<EmailTemplate>({ id: templateId, ...data, updatedAt: new Date().toISOString() });
 export const deleteEmailTemplate = (templateId: string) => simulateRequest({ message: 'Template deleted' });
 // FIX: Correctly typed mock return value
-export const getAllGamingActivities = () => simulateRequest<GamingActivity[]>([{ id: 'act_1', userId: 'user_1', type: 'win', amount: 250, game: 'Slots', timestamp: new Date().toISOString() }]);
+export const getAllGamingActivities = () => simulateRequest<GamingActivity[]>(MOCK_GAMING_ACTIVITIES);
+export const getGamingActivityForUser = (userId: string) => simulateRequest<GamingActivity[]>(MOCK_GAMING_ACTIVITIES.filter(a => a.userId === userId));
 
 export default {
     setAuthToken, login, register, getUserById, getUserPermissions, updateUserProfile,
@@ -342,6 +400,7 @@ export default {
     grantBonus, getAuditLogs, getUserDocuments, addUserDocument, deleteUserDocument,
     findLinkedAccounts, getUserTimeline, getSegments, getSupportTickets, getTicketById,
     updateTicket, addTicketReply, getEmailTemplates, createEmailTemplate,
-    updateEmailTemplate, deleteEmailTemplate, getAllGamingActivities, ALL_PERMISSIONS,
-    getAffiliates, getAchievements, getMissions, getIntegrations, updateIntegration
+    updateEmailTemplate, deleteEmailTemplate, getAllGamingActivities, getGamingActivityForUser,
+    ALL_PERMISSIONS, getAffiliates, getAchievements, getMissions, getIntegrations, updateIntegration,
+    getLoyaltyTiers, getPromotions, getRiskAssessmentForUser
 };

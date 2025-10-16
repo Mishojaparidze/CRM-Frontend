@@ -19,8 +19,10 @@ import AdminSettingsDashboard from './settings/AdminSettingsDashboard';
 import PlatformSettingsDashboard from './platform/PlatformSettingsDashboard';
 import AffiliateDashboard from './affiliates/AffiliateDashboard';
 import GamificationDashboard from './gamification/GamificationDashboard';
+import { LoyaltyProgramManager } from './loyalty/LoyaltyProgramManager';
+import { PromotionManager } from './promotions/PromotionManager';
 
-type Tab = 'overview' | 'users' | 'segments' | 'roles' | 'support' | 'tasks' | 'email' | 'analytics' | 'automation' | 'settings' | 'platform' | 'audit' | 'affiliates' | 'gamification';
+type Tab = 'overview' | 'users' | 'segments' | 'roles' | 'support' | 'tasks' | 'email' | 'analytics' | 'automation' | 'settings' | 'platform' | 'audit' | 'affiliates' | 'gamification' | 'loyalty' | 'promotions';
 
 const AdminDashboard: React.FC = () => {
     const { hasPermission } = useAuth();
@@ -107,8 +109,10 @@ const AdminDashboard: React.FC = () => {
             case 'email': return hasPermission('can_manage_email_templates') ? <EmailTemplateManager /> : null;
             case 'analytics': return hasPermission('can_view_analytics') ? <AnalyticsDashboard /> : null;
             case 'automation': return hasPermission('can_manage_automation') ? <AutomationDashboard /> : null;
+            case 'promotions': return hasPermission('can_manage_promotions') ? <PromotionManager /> : null;
             case 'affiliates': return hasPermission('can_manage_affiliates') ? <AffiliateDashboard /> : null;
             case 'gamification': return hasPermission('can_manage_gamification') ? <GamificationDashboard /> : null;
+            case 'loyalty': return <LoyaltyProgramManager />;
             case 'settings': return <AdminSettingsDashboard />;
             case 'platform': return hasPermission('can_manage_platform_settings') ? <PlatformSettingsDashboard /> : null;
             case 'audit': return hasPermission('can_view_audit_logs') ? <AuditLogView /> : null;
@@ -136,8 +140,10 @@ const AdminDashboard: React.FC = () => {
                         <TabButton tabId="users" label="Users" />
                         {hasPermission('can_manage_support_tickets') && <TabButton tabId="support" label="Support" />}
                         {hasPermission('can_view_analytics') && <TabButton tabId="analytics" label="Analytics" />}
+                        {hasPermission('can_manage_promotions') && <TabButton tabId="promotions" label="Promotions" />}
                         {hasPermission('can_manage_affiliates') && <TabButton tabId="affiliates" label="Affiliates" />}
                         {hasPermission('can_manage_gamification') && <TabButton tabId="gamification" label="Gamification" />}
+                        <TabButton tabId="loyalty" label="Loyalty" />
                         {hasPermission('can_manage_automation') && <TabButton tabId="automation" label="Automation" />}
                         <TabButton tabId="settings" label="My Settings" />
                         {hasPermission('can_manage_platform_settings') && <TabButton tabId="platform" label="Platform" />}

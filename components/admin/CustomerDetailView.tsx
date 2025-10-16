@@ -20,6 +20,8 @@ import { GamingActivityFeed } from './GamingActivityFeed';
 import { TaskManager } from './TaskManager';
 import { DataPrivacyManager } from './privacy/DataPrivacyManager';
 import { UserAchievements } from './gamification/UserAchievements';
+import { LoyaltyProgramStatus } from './loyalty/LoyaltyProgramStatus';
+import { RiskAssessmentCard } from './risk/RiskAssessmentCard';
 
 const CustomerDetailView: React.FC = () => {
     const { userId } = useParams<{ userId: string }>();
@@ -141,11 +143,13 @@ const CustomerDetailView: React.FC = () => {
                              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                                 <div className="lg:col-span-2 space-y-8">
                                     <PlayerStats user={user} />
-                                    <GamingActivityFeed />
+                                    <GamingActivityFeed userId={user.id} />
                                     <WalletManager userId={user.id} isAdminView />
                                 </div>
                                 <div className="lg:col-span-1 space-y-8">
+                                    <RiskAssessmentCard userId={user.id} userStatus={user.status} />
                                     <UserProfile user={user} isAdminView onUpdate={handleUserUpdate} />
+                                    <LoyaltyProgramStatus user={user} />
                                     <CustomerNotes user={user} onUpdate={handleUserUpdate} />
                                 </div>
                             </div>

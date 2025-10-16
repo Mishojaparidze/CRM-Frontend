@@ -8,6 +8,7 @@ export type Permission =
   | 'can_manage_notes'
   | 'can_manage_wallets'
   | 'can_grant_bonuses'
+  | 'can_manage_promotions'
   | 'can_manage_rg_limits'
   | 'can_view_audit_logs'
   | 'can_manage_roles'
@@ -46,6 +47,13 @@ export interface RGLimits {
     sessionTimeLimit: number | null; // in minutes
 }
 
+export interface LoyaltyTier {
+    id: string;
+    name: 'Bronze' | 'Silver' | 'Gold' | 'Platinum';
+    pointsRequired: number;
+    benefits: string[];
+}
+
 export interface User {
     id: string;
     email: string;
@@ -70,6 +78,8 @@ export interface User {
     churnPredictionScore?: number; // 0-100
     referredByAffiliateId?: string;
     achievements: string[]; // Array of achievement IDs
+    loyaltyPoints?: number;
+    loyaltyTierId?: string;
 }
 
 export interface AuthResponseData {
@@ -270,6 +280,21 @@ export interface Mission {
     isActive: boolean;
 }
 
+export type PromotionStatus = 'Active' | 'Scheduled' | 'Expired';
+export type PromotionType = 'Deposit Match' | 'Free Spins Offer' | 'Cashback Offer';
+
+export interface Promotion {
+    id: string;
+    name: string;
+    description: string;
+    type: PromotionType;
+    status: PromotionStatus;
+    startDate: string;
+    endDate: string;
+    bonusCode?: string;
+    minDeposit?: number;
+}
+
 export interface Integration {
     id: 'slack' | 'tableau';
     name: string;
@@ -284,4 +309,18 @@ export interface ApiKey {
     description: string;
     createdAt: string;
     lastUsedAt: string | null;
+}
+
+export type RiskLevel = 'Low' | 'Medium' | 'High' | 'Critical';
+
+export interface RiskFactor {
+    id: string;
+    description: string;
+    severity: 'low' | 'medium' | 'high';
+}
+
+export interface RiskAssessment {
+    score: number;
+    level: RiskLevel;
+    factors: RiskFactor[];
 }
