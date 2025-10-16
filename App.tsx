@@ -1,0 +1,43 @@
+
+import React from 'react';
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import { useAuth } from './hooks/useAuth';
+import AuthPage from './components/AuthPage';
+import DashboardPage from './components/DashboardPage';
+import CustomerDetailView from './components/admin/CustomerDetailView';
+import ResetPasswordPage from './components/ResetPasswordPage';
+import SupportTicketDetailView from './components/admin/SupportTicketDetailView';
+
+const App: React.FC = () => {
+  return (
+    <AuthProvider>
+      <HashRouter>
+        <Main />
+      </HashRouter>
+    </AuthProvider>
+  );
+};
+
+const Main: React.FC = () => {
+  const { isAuthenticated, isAdmin } = useAuth();
+  
+  return (
+    <Routes>
+      <Route path="/auth" element={!isAuthenticated ? <AuthPage /> : <Navigate to="/" />} />
+      <Route path="/reset-password/:token" element={!isAuthenticated ? <ResetPasswordPage /> : <Navigate to="/" />} />
+      <Route path="/" element={isAuthenticated ? <DashboardPage /> : <Navigate to="/auth" />} />
+      <Route 
+        path="/admin/user/:userId" 
+        element={isAuthenticated && isAdmin ? <CustomerDetailView /> : <Navigate to="/" />} 
+      />
+      <Route 
+        path="/admin/support/ticket/:ticketId" 
+        element={isAuthenticated && isAdmin ? <SupportTicketDetailView /> : <Navigate to="/" />} 
+      />
+      <Route path="*" element={<Navigate to="/" />} />
+    </Routes>
+  );
+};
+
+export default App;

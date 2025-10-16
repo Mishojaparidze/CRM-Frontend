@@ -1,0 +1,5 @@
+{
+  "name": "CRM Frontend",
+  "description": "A sleek and modern frontend interface for managing users, profiles, and wallets based on the provided CRM service documentation. It features authentication, profile updates, and wallet management with a focus on a clean user experience.",
+  "requestFramePermissions": []
+}
