@@ -2,9 +2,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { SupportTicket, User, TicketReply, TicketStatus, TicketPriority } from '../../types';
-// FIX: Use relative path for mockApiService
 import * as api from '../../services/mockApiService';
-// FIX: Use relative path for useAuth
 import { useAuth } from '../../hooks/useAuth';
 import Header from '../Header';
 import { Spinner } from '../ui/Spinner';

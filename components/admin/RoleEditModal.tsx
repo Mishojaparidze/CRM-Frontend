@@ -1,9 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { AdminRole, Permission } from '../../types';
-// FIX: Use relative path for mockApiService
 import * as api from '../../services/mockApiService';
-// FIX: Use relative path for mockApiService
 import { ALL_PERMISSIONS } from '../../services/mockApiService';
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/Card';
 import { Input } from '../ui/Input';

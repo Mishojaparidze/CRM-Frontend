@@ -1,14 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { User } from '../../types';
-// FIX: Use relative path for useAuth
 import { useAuth } from '../../hooks/useAuth';
 import { Card, CardContent } from '../ui/Card';
 import { StatusBadge } from './StatusBadge';
 
 interface UserTableProps {
   users: User[];
-  // FIX: Widen status type to match parent component's handler
   onStatusChange: (userId: string, status: User['status']) => void;
   onKycChange: (userId: string, kycStatus: 'none' | 'pending' | 'verified' | 'rejected') => void;
   selectedUserIds: string[];

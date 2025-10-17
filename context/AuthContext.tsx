@@ -1,7 +1,5 @@
-
 import React, { createContext, useState, useEffect, ReactNode, useCallback, useMemo } from 'react';
 import { User, AuthResponseData, Permission } from '../types';
-// FIX: Use relative path for mockApiService
 import * as api from '../services/mockApiService';
 
 interface AuthContextType {
@@ -12,7 +10,7 @@ interface AuthContextType {
   permissions: Permission[];
   hasPermission: (permission: Permission) => boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, username: string, password: string) => Promise<void>;
+  register: (email: string, username: string, fullName: string, password: string) => Promise<void>;
   logout: () => void;
   updateUser: (updatedUser: Partial<User>) => void;
 }
@@ -82,8 +80,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     await handleAuthSuccess(response.data);
   }, [handleAuthSuccess]);
 
-  const register = useCallback(async (email: string, username: string, password: string) => {
-    const response = await api.register(email, username, password);
+  const register = useCallback(async (email: string, username: string, fullName: string, password: string) => {
+    const response = await api.register(email, username, fullName, password);
     await handleAuthSuccess(response.data);
   }, [handleAuthSuccess]);
   

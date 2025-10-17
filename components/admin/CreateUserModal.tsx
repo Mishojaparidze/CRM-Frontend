@@ -13,6 +13,7 @@ interface CreateUserModalProps {
 export const CreateUserModal: React.FC<CreateUserModalProps> = ({ onClose, onUserCreated }) => {
     const [email, setEmail] = useState('');
     const [username, setUsername] = useState('');
+    const [fullName, setFullName] = useState('');
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
@@ -20,13 +21,13 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({ onClose, onUse
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
-        if (!email.trim() || !username.trim() || !password.trim()) {
+        if (!email.trim() || !username.trim() || !password.trim() || !fullName.trim()) {
             setError('All fields are required.');
             return;
         }
         setIsLoading(true);
         try {
-            await api.createUserByAdmin(email, username, password);
+            await api.createUserByAdmin(email, username, fullName, password);
             onUserCreated();
         } catch (err: any) {
             setError(err.message || 'Failed to create user.');
@@ -48,6 +49,7 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({ onClose, onUse
                     <CardContent className="space-y-4">
                         <Alert message={error} type="error" />
                         <Input id="create-email" label="Email" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
+                        <Input id="create-fullname" label="Full Name" type="text" value={fullName} onChange={e => setFullName(e.target.value)} required />
                         <Input id="create-username" label="Username" type="text" value={username} onChange={e => setUsername(e.target.value)} required />
                         <Input id="create-password" label="Initial Password" type="password" value={password} onChange={e => setPassword(e.target.value)} required />
                     </CardContent>

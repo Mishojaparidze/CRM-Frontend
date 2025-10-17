@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
-// FIX: Use relative path for mockApiService
 import * as api from '../services/mockApiService';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/Card';
 import { Input } from './ui/Input';

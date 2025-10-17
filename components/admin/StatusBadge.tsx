@@ -2,7 +2,6 @@
 import React from 'react';
 
 interface StatusBadgeProps {
-  // FIX: Added 'anonymized' to the list of accepted statuses
   status: 'active' | 'suspended' | 'banned' | 'anonymized';
 }
 
@@ -11,7 +10,6 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status }) => {
         active: 'bg-green-800 text-green-200',
         suspended: 'bg-yellow-800 text-yellow-200',
         banned: 'bg-red-800 text-red-200',
-        // FIX: Added style for 'anonymized' status
         anonymized: 'bg-gray-700 text-gray-200',
     };
     

@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-// FIX: Use relative path for mockApiService
 import * as api from '../../services/mockApiService';
 import { UserDocument } from '../../types';
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/Card';

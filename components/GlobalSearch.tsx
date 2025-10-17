@@ -1,9 +1,7 @@
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-// FIX: Use relative path for mockApiService
 import * as api from '../services/mockApiService';
-// FIX: Use relative path for types
 import { User } from '../types';
 import { Spinner } from './ui/Spinner';
 import { StatusBadge } from './admin/StatusBadge';

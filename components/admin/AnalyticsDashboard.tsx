@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { User, GamingActivity } from '../../types';
-// FIX: Use relative path for mockApiService
 import * as api from '../../services/mockApiService';
 import { Spinner } from '../ui/Spinner';
 import { Alert } from '../ui/Alert';

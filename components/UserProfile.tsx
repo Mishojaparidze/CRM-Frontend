@@ -40,6 +40,10 @@ const UserProfile: React.FC<UserProfileProps> = ({ user: initialUser, isAdminVie
 
   const [formData, setFormData] = useState({
     username: user?.username || '',
+    fullName: user?.fullName || '',
+    phone: user?.phone || '',
+    dateOfBirth: user?.dateOfBirth || '',
+    country: user?.country || '',
     preferences: user?.preferences || {
         language: 'en',
         timezone: 'UTC',
@@ -58,6 +62,10 @@ const UserProfile: React.FC<UserProfileProps> = ({ user: initialUser, isAdminVie
     if (user && !isEditing) {
       setFormData({
           username: user.username,
+          fullName: user.fullName,
+          phone: user.phone,
+          dateOfBirth: user.dateOfBirth,
+          country: user.country,
           preferences: user.preferences,
           ltv: user.ltv,
           ggr: user.ggr,
@@ -94,8 +102,8 @@ const UserProfile: React.FC<UserProfileProps> = ({ user: initialUser, isAdminVie
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    if (name === 'username') {
-        setFormData(prev => ({...prev, username: value}));
+    if (['username', 'fullName', 'phone', 'dateOfBirth', 'country'].includes(name)) {
+        setFormData(prev => ({...prev, [name]: value}));
     } else if (['ltv', 'ggr', 'avgBetSize'].includes(name)) {
         setFormData(prev => ({ ...prev, [name]: parseFloat(value) || 0 }));
     } else {
@@ -135,15 +143,12 @@ const UserProfile: React.FC<UserProfileProps> = ({ user: initialUser, isAdminVie
             <Alert message={message} type="success" />
             <Alert message={error} type="error" />
             
-            <div>
-              <Input
-                id="username-update"
-                label="Username"
-                name="username"
-                type="text"
-                value={formData.username}
-                onChange={handleInputChange}
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input id="username-update" label="Username" name="username" type="text" value={formData.username} onChange={handleInputChange}/>
+              <Input id="fullName" name="fullName" label="Full Name" type="text" value={formData.fullName} onChange={handleInputChange} />
+              <Input id="phone" name="phone" label="Phone" type="tel" value={formData.phone} onChange={handleInputChange} />
+              <Input id="dateOfBirth" name="dateOfBirth" label="Date of Birth" type="date" value={formData.dateOfBirth} onChange={handleInputChange} />
+              <Input id="country" name="country" label="Country (2-letter code)" type="text" value={formData.country} onChange={handleInputChange} />
             </div>
             
             {isAdminView && (
@@ -179,13 +184,16 @@ const UserProfile: React.FC<UserProfileProps> = ({ user: initialUser, isAdminVie
             <div className="pt-4 border-t border-dark-border">
               <h4 className="text-md font-medium text-dark-text mb-4">Preferences</h4>
               <div className="space-y-4">
-                  <div>
-                      <label htmlFor="language" className="block text-sm font-medium text-dark-text-secondary">Language</label>
-                      <select id="language" name="language" value={formData.preferences.language} onChange={handleInputChange} className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-dark-border focus:outline-none focus:ring-brand-primary focus:border-brand-primary sm:text-sm rounded-md bg-dark-card text-dark-text">
-                        <option value="en">English</option>
-                        <option value="es">Español</option>
-                        <option value="fr">Français</option>
-                      </select>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <Input id="timezone" name="timezone" label="Timezone" type="text" value={formData.preferences.timezone} onChange={handleInputChange} />
+                      <div>
+                          <label htmlFor="language" className="block text-sm font-medium text-dark-text-secondary">Language</label>
+                          <select id="language" name="language" value={formData.preferences.language} onChange={handleInputChange} className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-dark-border focus:outline-none focus:ring-brand-primary focus:border-brand-primary sm:text-sm rounded-md bg-dark-card text-dark-text">
+                            <option value="en">English</option>
+                            <option value="es">Español</option>
+                            <option value="fr">Français</option>
+                          </select>
+                      </div>
                   </div>
                   <div>
                       <label htmlFor="theme" className="block text-sm font-medium text-dark-text-secondary">Theme</label>
@@ -207,8 +215,12 @@ const UserProfile: React.FC<UserProfileProps> = ({ user: initialUser, isAdminVie
           <>
             <dl>
               <InfoRow label="User ID" value={<span className="font-mono text-xs">{user.id}</span>} />
-              <InfoRow label="Email" value={user.email} />
+              <InfoRow label="Full Name" value={user.fullName} />
               <InfoRow label="Username" value={user.username} />
+              <InfoRow label="Email" value={user.email} />
+              <InfoRow label="Phone" value={user.phone} />
+              <InfoRow label="Date of Birth" value={new Date(user.dateOfBirth).toLocaleDateString()} />
+              <InfoRow label="Country" value={user.country} />
               <InfoRow label="Status" value={<span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.status === 'active' ? 'bg-green-800 text-green-200' : 'bg-red-800 text-red-200'}`}>{user.status}</span>} />
               <InfoRow label="KYC Status" value={<span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.kycStatus === 'verified' ? 'bg-blue-800 text-blue-200' : 'bg-yellow-800 text-yellow-200'}`}>{user.kycStatus}</span>} />
               <InfoRow label="Joined" value={new Date(user.createdAt).toLocaleDateString()} />
@@ -228,6 +240,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ user: initialUser, isAdminVie
               <h4 className="text-md font-medium text-dark-text mb-2">Preferences</h4>
               <dl>
                 <InfoRow label="Language" value={user.preferences.language.toUpperCase()} />
+                <InfoRow label="Timezone" value={user.preferences.timezone} />
                 <InfoRow label="Theme" value={user.preferences.theme.charAt(0).toUpperCase() + user.preferences.theme.slice(1)} />
                 <InfoRow label="Email Notifications" value={user.preferences.notificationEmail ? 'Enabled' : 'Disabled'} />
                 <InfoRow label="SMS Notifications" value={user.preferences.notificationSms ? 'Enabled' : 'Disabled'} />

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { Button } from './ui/Button';
@@ -8,6 +7,7 @@ import { Alert } from './ui/Alert';
 const RegisterForm: React.FC = () => {
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
+  const [fullName, setFullName] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
@@ -43,7 +43,7 @@ const RegisterForm: React.FC = () => {
 
     setIsLoading(true);
     try {
-      await register(email, username, password);
+      await register(email, username, fullName, password);
     } catch (err: any) {
       setError(err.message || 'Failed to register. Please try again.');
     } finally {
@@ -61,6 +61,14 @@ const RegisterForm: React.FC = () => {
         required
         value={email}
         onChange={(e) => setEmail(e.target.value)}
+      />
+       <Input
+        id="fullname-register"
+        label="Full Name"
+        type="text"
+        required
+        value={fullName}
+        onChange={(e) => setFullName(e.target.value)}
       />
       <Input
         id="username-register"

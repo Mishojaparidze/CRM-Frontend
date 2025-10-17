@@ -1,4 +1,3 @@
-
 import React, { useMemo } from 'react';
 import { User } from '../../../types';
 import { Card, CardHeader, CardTitle, CardContent } from '../../ui/Card';
@@ -8,54 +7,67 @@ interface CohortAnalysisProps {
 }
 
 export const CohortAnalysis: React.FC<CohortAnalysisProps> = ({ users }) => {
-    const cohorts = useMemo(() => {
-        const cohortData: Record<string, { count: number; totalLtv: number }> = {};
+    const cohortData = useMemo(() => {
+        // This is a simplified cohort analysis. A real one would be more complex.
+        const cohorts: { [key: string]: { total: number; retained: number } } = {};
         
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
         users.forEach(user => {
             const signupDate = new Date(user.createdAt);
-            const cohortKey = `${signupDate.getFullYear()}-${String(signupDate.getMonth() + 1).padStart(2, '0')}`; // YYYY-MM
+            const cohortKey = `${signupDate.getFullYear()}-${String(signupDate.getMonth() + 1).padStart(2, '0')}`;
             
-            if (!cohortData[cohortKey]) {
-                cohortData[cohortKey] = { count: 0, totalLtv: 0 };
+            if (!cohorts[cohortKey]) {
+                cohorts[cohortKey] = { total: 0, retained: 0 };
             }
-            cohortData[cohortKey].count++;
-            cohortData[cohortKey].totalLtv += user.ltv;
+            cohorts[cohortKey].total++;
+
+            if (new Date(user.lastLoginAt) > thirtyDaysAgo) {
+                cohorts[cohortKey].retained++;
+            }
         });
 
-        return Object.entries(cohortData)
-            .sort(([keyA], [keyB]) => keyB.localeCompare(keyA)) // Sort by most recent first
+        return Object.entries(cohorts)
+            .sort(([a], [b]) => a.localeCompare(b))
             .map(([key, data]) => ({
-                month: key,
-                userCount: data.count,
-                totalLtv: data.totalLtv,
-                avgLtv: data.count > 0 ? data.totalLtv / data.count : 0,
+                cohort: key,
+                ...data,
+                retention: data.total > 0 ? (data.retained / data.total) * 100 : 0,
             }));
     }, [users]);
 
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Cohort Analysis</CardTitle>
-                <p className="text-sm text-dark-text-secondary mt-1">User LTV by Sign-up Month</p>
+                <CardTitle>Monthly Sign-up Cohorts</CardTitle>
+                <p className="text-sm text-dark-text-secondary mt-1">30-day retention by sign-up month.</p>
             </CardHeader>
             <CardContent>
-                 <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-dark-border">
-                        <thead className="bg-gray-800">
+                <div className="overflow-x-auto">
+                    <table className="min-w-full">
+                        <thead>
                             <tr>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-dark-text-secondary uppercase tracking-wider">Cohort (Sign-up Month)</th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-dark-text-secondary uppercase tracking-wider">New Users</th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-dark-text-secondary uppercase tracking-wider">Total LTV</th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-dark-text-secondary uppercase tracking-wider">Avg. LTV per User</th>
+                                <th className="py-2 text-left text-xs font-medium text-dark-text-secondary uppercase">Cohort</th>
+                                <th className="py-2 text-left text-xs font-medium text-dark-text-secondary uppercase">Sign-ups</th>
+                                <th className="py-2 text-left text-xs font-medium text-dark-text-secondary uppercase">Active (30d)</th>
+                                <th className="py-2 text-left text-xs font-medium text-dark-text-secondary uppercase">Retention</th>
                             </tr>
                         </thead>
-                        <tbody className="bg-dark-card divide-y divide-dark-border">
-                            {cohorts.map(cohort => (
-                                <tr key={cohort.month}>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-dark-text">{cohort.month}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-dark-text-secondary">{cohort.userCount.toLocaleString()}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-dark-text-secondary">${cohort.totalLtv.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-dark-text-secondary">${cohort.avgLtv.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                        <tbody>
+                            {cohortData.map(cohort => (
+                                <tr key={cohort.cohort}>
+                                    <td className="py-2 text-sm font-semibold text-dark-text">{cohort.cohort}</td>
+                                    <td className="py-2 text-sm text-dark-text-secondary">{cohort.total}</td>
+                                    <td className="py-2 text-sm text-dark-text-secondary">{cohort.retained}</td>
+                                    <td className="py-2 text-sm text-dark-text-secondary">
+                                        <div className="flex items-center">
+                                            <div className="w-20 bg-gray-700 rounded-full h-2.5 mr-2">
+                                                <div className="bg-blue-500 h-2.5 rounded-full" style={{ width: `${cohort.retention.toFixed(1)}%` }}></div>
+                                            </div>
+                                            <span>{cohort.retention.toFixed(1)}%</span>
+                                        </div>
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>

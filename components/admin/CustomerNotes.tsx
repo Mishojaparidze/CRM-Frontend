@@ -1,13 +1,11 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { Note, User } from '../../types';
-// FIX: Use relative path for mockApiService
 import * as api from '../../services/mockApiService';
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Alert } from '../ui/Alert';
 import { Spinner } from '../ui/Spinner';
-// FIX: Use relative path for useAuth
 import { useAuth } from '../../hooks/useAuth';
 import { GoogleGenAI } from '@google/genai';
 

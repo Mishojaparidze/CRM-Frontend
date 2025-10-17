@@ -1,8 +1,6 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
-// FIX: Use relative path for types
 import { Wallet } from '../types';
-// FIX: Use relative path for mockApiService
 import * as api from '../services/mockApiService';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/Card';
 import { Input } from './ui/Input';

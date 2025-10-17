@@ -1,173 +1,183 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { User, GamingActivity } from '../../types';
 import * as api from '../../services/mockApiService';
-import { useAuth } from '../../hooks/useAuth';
-import { User, Affiliate } from '../../types';
 import Header from '../Header';
+import { Spinner } from '../ui/Spinner';
+import { Alert } from '../ui/Alert';
 import UserProfile from '../UserProfile';
 import WalletManager from '../WalletManager';
 import { CustomerNotes } from './CustomerNotes';
 import { UserSessionsManager } from './UserSessionsManager';
+import { UserPreferencesManager } from './UserPreferencesManager';
+import { PlayerStats } from './PlayerStats';
+import { GamingActivityFeed } from './GamingActivityFeed';
 import { BonusManager } from './BonusManager';
 import { ResponsibleGamingManager } from './ResponsibleGamingManager';
 import { DocumentManager } from './DocumentManager';
 import { LinkedAccountsView } from './LinkedAccountsView';
 import { UserTimeline } from './UserTimeline';
-import { PlayerStats } from './PlayerStats';
-import { Spinner } from '../ui/Spinner';
-import { Alert } from '../ui/Alert';
-import { GamingActivityFeed } from './GamingActivityFeed';
-import { TaskManager } from './TaskManager';
 import { DataPrivacyManager } from './privacy/DataPrivacyManager';
 import { UserAchievements } from './gamification/UserAchievements';
 import { LoyaltyProgramStatus } from './loyalty/LoyaltyProgramStatus';
 import { RiskAssessmentCard } from './risk/RiskAssessmentCard';
+import { TaskManager } from './TaskManager';
+import AccountBalanceCard from './financials/AccountBalanceCard';
+import TransactionTable from './financials/TransactionTable';
+
+type DetailTab = 'overview' | 'financials' | 'notes' | 'gaming' | 'bonuses' | 'settings' | 'security' | 'privacy';
 
 const CustomerDetailView: React.FC = () => {
-    const { userId } = useParams<{ userId: string }>();
-    const { hasPermission } = useAuth();
-    const [user, setUser] = useState<User | null>(null);
-    const [referringAffiliate, setReferringAffiliate] = useState<Affiliate | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState('');
-    const [activeTab, setActiveTab] = useState('overview');
+  const { userId } = useParams<{ userId: string }>();
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [activeTab, setActiveTab] = useState<DetailTab>('overview');
 
-    const fetchUser = useCallback(async () => {
-        if (!userId) return;
-        setIsLoading(true);
-        setError('');
-        try {
-            const userResponse = await api.getUserById(userId);
-            const userData = userResponse.data;
-            setUser(userData);
-
-            if (userData.referredByAffiliateId) {
-                const affiliatesResponse = await api.getAffiliates();
-                const affiliate = affiliatesResponse.data.find(a => a.id === userData.referredByAffiliateId);
-                setReferringAffiliate(affiliate || null);
-            }
-
-        } catch (err: any) {
-            setError(err.message || 'Failed to fetch user data.');
-        } finally {
-            setIsLoading(false);
-        }
-    }, [userId]);
-
-    useEffect(() => {
-        fetchUser();
-    }, [fetchUser]);
-
-    const handleUserUpdate = (updatedUser: User) => {
-        setUser(updatedUser);
-    };
-    
-    const onUserAnonymized = () => {
-        fetchUser(); // Refetch user data after anonymization
-    };
-
-
-    if (isLoading) {
-        return <div className="min-h-screen bg-dark-bg flex items-center justify-center"><Spinner /></div>;
+  const fetchUser = useCallback(async () => {
+    if (!userId) return;
+    setIsLoading(true);
+    setError('');
+    try {
+      const response = await api.getUserById(userId);
+      setUser(response.data);
+    } catch (err: any) {
+      setError(err.message || 'Failed to load user data.');
+    } finally {
+      setIsLoading(false);
     }
+  }, [userId]);
 
-    if (error) {
+  useEffect(() => {
+    fetchUser();
+  }, [fetchUser]);
+
+  const handleUserUpdate = (updatedUser: User) => {
+    setUser(updatedUser);
+  };
+  
+  const handleAnonymize = () => {
+    fetchUser(); // Refetch user data after anonymization
+  }
+
+  const TabButton: React.FC<{ tabId: DetailTab, label: string }> = ({ tabId, label }) => (
+    <button
+      onClick={() => setActiveTab(tabId)}
+      className={`px-3 py-2 font-medium text-sm rounded-md whitespace-nowrap ${activeTab === tabId ? 'bg-brand-primary text-white' : 'text-dark-text-secondary hover:bg-gray-800'}`}
+    >
+      {label}
+    </button>
+  );
+
+  const renderContent = () => {
+    if (!user) return null;
+    switch (activeTab) {
+      case 'overview':
         return (
-            <div className="min-h-screen bg-dark-bg">
-                <Header />
-                <main className="py-10"><div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"><Alert message={error} type="error" /></div></main>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-8">
+              <PlayerStats user={user} />
+              <UserProfile user={user} isAdminView={true} onUpdate={handleUserUpdate} />
             </div>
-        );
-    }
-    
-    if (!user) {
-        return (
-             <div className="min-h-screen bg-dark-bg">
-                <Header />
-                <main className="py-10"><div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"><Alert message="User not found." type="error" /></div></main>
+            <div className="lg:col-span-1 space-y-8">
+              <AccountBalanceCard user={user} />
+              <RiskAssessmentCard userId={user.id} userStatus={user.status} />
+              <LoyaltyProgramStatus user={user} />
             </div>
+          </div>
         );
-    }
-
-    const tabs = [
-        { id: 'overview', label: 'Overview' },
-        { id: 'tasks', label: 'Tasks' },
-        { id: 'timeline', label: 'Timeline' },
-        { id: 'gamification', label: 'Gamification' },
-        { id: 'bonuses', label: 'Bonuses', permission: 'can_grant_bonuses' },
-        { id: 'sessions', label: 'Sessions' },
-        { id: 'rg', label: 'Responsible Gaming', permission: 'can_manage_rg_limits' },
-        { id: 'documents', label: 'Documents' },
-        { id: 'linked', label: 'Linked Accounts' },
-        { id: 'privacy', label: 'Privacy', permission: 'can_manage_gdpr' }
-    ].filter(tab => !tab.permission || hasPermission(tab.permission as any));
-
-    return (
-        <div className="min-h-screen bg-dark-bg">
-            <Header />
-            <main className="py-10">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="mb-8">
-                        <Link to="/" className="text-sm text-brand-secondary hover:underline mb-4 inline-block">
-                            &larr; Back to Admin Dashboard
-                        </Link>
-                        <h1 className="text-3xl font-bold text-white">Customer View: {user.username}</h1>
-                        <p className="mt-1 text-lg text-dark-text-secondary">{user.email}</p>
-                        {referringAffiliate && (
-                            <p className="mt-2 text-sm text-dark-text-secondary">
-                                Referred by: <span className="font-semibold text-brand-secondary">{referringAffiliate.name}</span>
-                            </p>
-                        )}
-                    </div>
-
-                    <div className="border-b border-dark-border mb-6">
-                        <nav className="-mb-px flex space-x-8 overflow-x-auto" aria-label="Tabs">
-                            {tabs.map(tab => (
-                                <button
-                                    key={tab.id}
-                                    onClick={() => setActiveTab(tab.id)}
-                                    className={`${
-                                        activeTab === tab.id
-                                            ? 'border-brand-primary text-brand-primary'
-                                            : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'
-                                    } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-                                >
-                                    {tab.label}
-                                </button>
-                            ))}
-                        </nav>
-                    </div>
-
-                    <div>
-                        {activeTab === 'overview' && (
-                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                                <div className="lg:col-span-2 space-y-8">
-                                    <PlayerStats user={user} />
-                                    <GamingActivityFeed userId={user.id} />
-                                    <WalletManager userId={user.id} isAdminView />
-                                </div>
-                                <div className="lg:col-span-1 space-y-8">
-                                    <RiskAssessmentCard userId={user.id} userStatus={user.status} />
-                                    <UserProfile user={user} isAdminView onUpdate={handleUserUpdate} />
-                                    <LoyaltyProgramStatus user={user} />
-                                    <CustomerNotes user={user} onUpdate={handleUserUpdate} />
-                                </div>
-                            </div>
-                        )}
-                         {activeTab === 'tasks' && <TaskManager userId={user.id} allAdmins={[user]} />}
-                         {activeTab === 'timeline' && <UserTimeline userId={user.id} />}
-                         {activeTab === 'gamification' && <UserAchievements user={user} />}
-                         {activeTab === 'bonuses' && <BonusManager userId={user.id} />}
-                         {activeTab === 'sessions' && <UserSessionsManager userId={user.id} />}
-                         {activeTab === 'rg' && <ResponsibleGamingManager user={user} onUpdate={handleUserUpdate} />}
-                         {activeTab === 'documents' && <DocumentManager userId={user.id} />}
-                         {activeTab === 'linked' && <LinkedAccountsView userId={user.id} />}
-                         {activeTab === 'privacy' && <DataPrivacyManager user={user} onAnonymize={onUserAnonymized} />}
-                    </div>
+      case 'financials':
+          return (
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                  <div className="lg:col-span-2 space-y-8">
+                      <TransactionTable type="deposit" title="Deposit History" userId={user.id} />
+                      <TransactionTable type="withdrawal" title="Withdrawal History" userId={user.id} />
+                  </div>
+                  <div className="lg:col-span-1 space-y-8">
+                      <WalletManager userId={user.id} isAdminView={true} />
+                  </div>
+              </div>
+          );
+      case 'notes':
+        return <CustomerNotes user={user} onUpdate={handleUserUpdate} />;
+      case 'gaming':
+         return (
+             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-2"><UserTimeline userId={user.id} /></div>
+                <div className="lg:col-span-1 space-y-8">
+                  <UserAchievements user={user} />
+                  <TaskManager userId={user.id} />
                 </div>
-            </main>
-        </div>
+             </div>
+         );
+      case 'bonuses':
+        return <BonusManager userId={user.id} />;
+      case 'settings':
+        return (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <UserPreferencesManager user={user} onUpdate={handleUserUpdate} />
+                <ResponsibleGamingManager user={user} onUpdate={handleUserUpdate} />
+            </div>
+        );
+      case 'security':
+         return (
+             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <UserSessionsManager userId={user.id} />
+                <DocumentManager userId={user.id} />
+                <LinkedAccountsView userId={user.id} />
+            </div>
+         );
+       case 'privacy':
+         return <DataPrivacyManager user={user} onAnonymize={handleAnonymize} />;
+      default:
+        return null;
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-dark-bg flex items-center justify-center">
+        <Spinner />
+      </div>
     );
+  }
+  
+  return (
+    <div className="min-h-screen bg-dark-bg">
+      <Header />
+      <main className="py-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {error && <Alert message={error} type="error" />}
+          {user && (
+            <div className="space-y-6">
+              <div>
+                <Link to="/" className="text-sm text-brand-secondary hover:underline mb-4 inline-block">
+                  &larr; Back to Admin Dashboard
+                </Link>
+                <h1 className="text-3xl font-bold text-white">Customer Profile: {user.username}</h1>
+                <p className="mt-1 text-lg text-dark-text-secondary">Viewing details for user ID: <span className="font-mono text-xs">{user.id}</span></p>
+              </div>
+              <div className="border-b border-dark-border">
+                <nav className="-mb-px flex space-x-2 overflow-x-auto" aria-label="Tabs">
+                    <TabButton tabId="overview" label="Overview" />
+                    <TabButton tabId="financials" label="Financials" />
+                    <TabButton tabId="notes" label="Notes" />
+                    <TabButton tabId="gaming" label="Gaming Activity" />
+                    <TabButton tabId="bonuses" label="Bonuses" />
+                    <TabButton tabId="settings" label="Preferences" />
+                    <TabButton tabId="security" label="Security" />
+                    <TabButton tabId="privacy" label="Privacy (GDPR)" />
+                </nav>
+              </div>
+              <div>
+                {renderContent()}
+              </div>
+            </div>
+          )}
+        </div>
+      </main>
+    </div>
+  );
 };
 
 export default CustomerDetailView;
