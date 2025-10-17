@@ -17,10 +17,10 @@ const NewApiKeyModal: React.FC<{ apiKey: ApiKey; onClose: () => void; }> = ({ ap
     };
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 p-4" role="dialog" aria-modal="true" aria-labelledby="newApiKeyTitle">
             <div className="bg-dark-card rounded-lg shadow-xl w-full max-w-lg">
                 <CardHeader>
-                    <CardTitle>API Key Generated Successfully</CardTitle>
+                    <CardTitle id="newApiKeyTitle">API Key Generated Successfully</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <Alert message="Please copy your new API key now. You won’t be able to see it again!" type="error" />

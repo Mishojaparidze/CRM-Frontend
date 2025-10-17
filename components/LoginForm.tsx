@@ -22,7 +22,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ onForgotPassword }) => {
     try {
       await login(email, password);
     } catch (err: any) {
-      setError(err.message || 'Failed to login. Please check your credentials.');
+      // Use a generic error message to prevent user enumeration
+      setError('Invalid email or password. Please try again.');
     } finally {
       setIsLoading(false);
     }

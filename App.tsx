@@ -8,12 +8,15 @@ import DashboardPage from './components/DashboardPage';
 import CustomerDetailView from './components/admin/CustomerDetailView';
 import ResetPasswordPage from './components/ResetPasswordPage';
 import SupportTicketDetailView from './components/admin/SupportTicketDetailView';
+import ErrorBoundary from './components/ErrorBoundary';
 
 const App: React.FC = () => {
   return (
     <AuthProvider>
       <HashRouter>
-        <Main />
+        <ErrorBoundary>
+          <Main />
+        </ErrorBoundary>
       </HashRouter>
     </AuthProvider>
   );

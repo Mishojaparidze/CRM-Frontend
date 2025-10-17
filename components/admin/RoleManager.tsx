@@ -8,6 +8,8 @@ import { Alert } from '../ui/Alert';
 import { Button } from '../ui/Button';
 import { RoleEditModal } from './RoleEditModal';
 
+const PERMISSION_PREVIEW_LIMIT = 5;
+
 export const RoleManager: React.FC = () => {
     const [admins, setAdmins] = useState<User[]>([]);
     const [roles, setRoles] = useState<AdminRole[]>([]);
@@ -138,8 +140,8 @@ export const RoleManager: React.FC = () => {
                                                 <span>{role.permissions.length} permissions</span>
                                                 <div className="absolute z-10 bottom-full mb-2 w-64 p-2 bg-gray-900 border border-dark-border text-white text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
                                                     <ul className="list-disc list-inside space-y-1">
-                                                        {role.permissions.slice(0, 5).map(p => <li key={p} className="capitalize">{p.replace(/can_|_/g, ' ')}</li>)}
-                                                        {role.permissions.length > 5 && <li>...and {role.permissions.length - 5} more</li>}
+                                                        {role.permissions.slice(0, PERMISSION_PREVIEW_LIMIT).map(p => <li key={p} className="capitalize">{p.replace(/can_|_/g, ' ')}</li>)}
+                                                        {role.permissions.length > PERMISSION_PREVIEW_LIMIT && <li>...and {role.permissions.length - PERMISSION_PREVIEW_LIMIT} more</li>}
                                                     </ul>
                                                 </div>
                                             </div>

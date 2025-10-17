@@ -8,6 +8,8 @@ import { User } from '../types';
 import { Spinner } from './ui/Spinner';
 import { StatusBadge } from './admin/StatusBadge';
 
+const SEARCH_RESULT_LIMIT = 10;
+
 const KycBadge: React.FC<{ status: User['kycStatus'] }> = ({ status }) => {
     const colorClasses = {
         none: 'bg-gray-700 text-gray-200',
@@ -64,7 +66,7 @@ export const GlobalSearch: React.FC = () => {
         return allUsers.filter(user =>
             user.username.toLowerCase().includes(query.toLowerCase()) ||
             user.email.toLowerCase().includes(query.toLowerCase())
-        ).slice(0, 10); // Limit results to 10
+        ).slice(0, SEARCH_RESULT_LIMIT);
     }, [query, allUsers]);
 
     const handleSelectUser = (userId: string) => {

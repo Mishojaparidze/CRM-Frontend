@@ -6,6 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '../../ui/Card';
 import { Button } from '../../ui/Button';
 import { Spinner } from '../../ui/Spinner';
 import { Alert } from '../../ui/Alert';
+import { PromotionEditModal } from './PromotionEditModal';
 
 const PromotionStatusBadge: React.FC<{ status: PromotionStatus }> = ({ status }) => {
     const colors = {
@@ -21,6 +22,9 @@ export const PromotionManager: React.FC = () => {
     const [promotions, setPromotions] = useState<Promotion[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
+    const [message, setMessage] = useState('');
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedPromotion, setSelectedPromotion] = useState<Promotion | undefined>(undefined);
 
     const fetchPromotions = useCallback(async () => {
         setIsLoading(true);
@@ -39,9 +43,47 @@ export const PromotionManager: React.FC = () => {
         fetchPromotions();
     }, [fetchPromotions]);
 
+    const handleCreate = () => {
+        setSelectedPromotion(undefined);
+        setIsModalOpen(true);
+    };
+
+    const handleEdit = (promo: Promotion) => {
+        setSelectedPromotion(promo);
+        setIsModalOpen(true);
+    };
+
+    const handleDelete = async (promoId: string) => {
+        if (!window.confirm('Are you sure you want to delete this promotion?')) return;
+
+        setError('');
+        setMessage('');
+        try {
+            const response = await api.deletePromotion(promoId);
+            setMessage(response.message);
+            fetchPromotions();
+        } catch (err: any) {
+            setError(err.message || 'Failed to delete promotion.');
+        }
+    };
+    
+    const onModalSave = () => {
+        setIsModalOpen(false);
+        setMessage('Promotion saved successfully.');
+        fetchPromotions();
+    };
+
     const formatDate = (dateString: string) => new Date(dateString).toLocaleDateString();
 
     return (
+        <>
+        {isModalOpen && (
+            <PromotionEditModal
+                onClose={() => setIsModalOpen(false)}
+                onSave={onModalSave}
+                promotionToEdit={selectedPromotion}
+            />
+        )}
         <Card>
             <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between">
                 <div className="mb-4 md:mb-0">
@@ -49,13 +91,14 @@ export const PromotionManager: React.FC = () => {
                     <p className="mt-1 text-sm text-dark-text-secondary">Manage site-wide promotional offers and campaigns.</p>
                 </div>
                 {hasPermission('can_manage_promotions') && (
-                    <Button onClick={() => alert('Promotion creation wizard coming soon!')} className="w-full md:w-auto">
+                    <Button onClick={handleCreate} className="w-full md:w-auto">
                         Create New Promotion
                     </Button>
                 )}
             </CardHeader>
             <CardContent>
-                {error && <Alert message={error} type="error" />}
+                <Alert message={error} type="error" />
+                <Alert message={message} type="success" />
                 {isLoading ? (
                     <div className="flex justify-center py-16"><Spinner /></div>
                 ) : (
@@ -85,8 +128,8 @@ export const PromotionManager: React.FC = () => {
                                             <PromotionStatusBadge status={promo.status} />
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-4">
-                                            <button className="text-brand-secondary hover:text-brand-primary" disabled={!hasPermission('can_manage_promotions')}>Edit</button>
-                                            <button className="text-red-500 hover:text-red-400" disabled={!hasPermission('can_manage_promotions')}>Deactivate</button>
+                                            <button onClick={() => handleEdit(promo)} className="text-brand-secondary hover:text-brand-primary" disabled={!hasPermission('can_manage_promotions')}>Edit</button>
+                                            <button onClick={() => handleDelete(promo.id)} className="text-red-500 hover:text-red-400" disabled={!hasPermission('can_manage_promotions')}>Delete</button>
                                         </td>
                                     </tr>
                                 ))}
@@ -96,5 +139,6 @@ export const PromotionManager: React.FC = () => {
                 )}
             </CardContent>
         </Card>
+        </>
     );
 };

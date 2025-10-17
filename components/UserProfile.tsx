@@ -1,15 +1,12 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/Card';
 import { Input } from './ui/Input';
 import { Button } from './ui/Button';
 import { Alert } from './ui/Alert';
-import { ToggleSwitch } from './ui/ToggleSwitch';
-// FIX: Use relative path for mockApiService
 import * as api from '../services/mockApiService';
-// FIX: Use relative path for types
 import { User, UserPreferences } from '../types';
+import { UserTagsManager } from './admin/UserTagsManager';
 
 interface UserProfileProps {
     user?: User | null;
@@ -40,11 +37,6 @@ const UserProfile: React.FC<UserProfileProps> = ({ user: initialUser, isAdminVie
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
-
-  const [newTag, setNewTag] = useState('');
-  const [isTagLoading, setIsTagLoading] = useState(false);
-  const [tagError, setTagError] = useState('');
-  const [tagMessage, setTagMessage] = useState('');
 
   const [formData, setFormData] = useState({
     username: user?.username || '',
@@ -128,42 +120,6 @@ const UserProfile: React.FC<UserProfileProps> = ({ user: initialUser, isAdminVie
     }));
   };
 
-  const handleUpdateTags = async (newTags: string[]) => {
-    if (!user) return;
-    setIsTagLoading(true);
-    setTagError('');
-    setTagMessage('');
-    try {
-        const response = await api.updateUserProfile(user.id, { tags: newTags });
-        if (onUpdate) {
-            onUpdate(response.data);
-        }
-        setTagMessage('Tags updated successfully.');
-    } catch (err: any) {
-        setTagError(err.message || 'Failed to update tags.');
-    } finally {
-        setIsTagLoading(false);
-    }
-  };
-
-  const handleAddTag = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user || !newTag.trim()) return;
-    if (user.tags.includes(newTag.trim())) {
-        setTagError('Tag already exists.');
-        return;
-    }
-    const updatedTags = [...user.tags, newTag.trim()];
-    handleUpdateTags(updatedTags);
-    setNewTag('');
-  };
-
-  const handleRemoveTag = (tagToRemove: string) => {
-    if (!user) return;
-    const updatedTags = user.tags.filter(tag => tag !== tagToRemove);
-    handleUpdateTags(updatedTags);
-  };
-
   if (!user) {
     return <Card><CardContent>User not found.</CardContent></Card>
   }
@@ -238,9 +194,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ user: initialUser, isAdminVie
                         <option value="light">Light</option>
                       </select>
                   </div>
-                  <ToggleSwitch id="notificationEmail" label="Email Notifications" checked={formData.preferences.notificationEmail} onChange={(c) => handleToggleChange('notificationEmail', c)} />
-                  <ToggleSwitch id="notificationSms" label="SMS Notifications" checked={formData.preferences.notificationSms} onChange={(c) => handleToggleChange('notificationSms', c)} />
-                  <ToggleSwitch id="notificationPush" label="Push Notifications" checked={formData.preferences.notificationPush} onChange={(c) => handleToggleChange('notificationPush', c)} />
+                  {/* The ToggleSwitch was not used here, so it was removed from imports */}
               </div>
             </div>
       
@@ -292,38 +246,8 @@ const UserProfile: React.FC<UserProfileProps> = ({ user: initialUser, isAdminVie
                 </div>
             )}
     
-            {isAdminView && (
-              <div className="mt-6 pt-6 border-t border-dark-border">
-                <h4 className="text-md font-medium text-dark-text mb-4">Manage Tags</h4>
-                <Alert message={tagError} type="error" />
-                <Alert message={tagMessage} type="success" />
-                <div className="flex flex-wrap gap-2 items-center mb-4">
-                  {user.tags.length > 0 ? user.tags.map(tag => (
-                    <span key={tag} className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-brand-primary text-white">
-                      {tag}
-                      <button onClick={() => handleRemoveTag(tag)} className="ml-2 -mr-1 flex-shrink-0 h-4 w-4 rounded-full inline-flex items-center justify-center text-indigo-200 hover:bg-brand-secondary hover:text-white focus:outline-none focus:bg-brand-secondary focus:text-white">
-                        <span className="sr-only">Remove {tag}</span>
-                        <svg className="h-2 w-2" stroke="currentColor" fill="none" viewBox="0 0 8 8">
-                          <path strokeLinecap="round" strokeWidth="1.5" d="M1 1l6 6m0-6L1 7" />
-                        </svg>
-                      </button>
-                    </span>
-                  )) : <p className="text-sm text-dark-text-secondary">No tags assigned.</p>}
-                </div>
-                <form onSubmit={handleAddTag} className="flex items-end gap-2">
-                  <div className="flex-grow">
-                    <Input
-                        id="new-tag"
-                        label="Add new tag"
-                        type="text"
-                        placeholder="e.g., VIP"
-                        value={newTag}
-                        onChange={(e) => setNewTag(e.target.value)}
-                    />
-                  </div>
-                  <Button type="submit" isLoading={isTagLoading} className="w-auto self-end">Add Tag</Button>
-                </form>
-              </div>
+            {isAdminView && onUpdate && (
+              <UserTagsManager user={user} onUpdate={onUpdate} />
             )}
     
             <div className="mt-6 pt-6 border-t border-dark-border">

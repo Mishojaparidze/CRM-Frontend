@@ -1,5 +1,5 @@
 
-import React, { createContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useState, useEffect, ReactNode, useCallback, useMemo } from 'react';
 import { User, AuthResponseData, Permission } from '../types';
 // FIX: Use relative path for mockApiService
 import * as api from '../services/mockApiService';
@@ -40,7 +40,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setIsLoading(false);
   }, []);
 
-  const handleAuthSuccess = async (data: AuthResponseData) => {
+  const logout = useCallback(() => {
+    setUser(null);
+    setToken(null);
+    setPermissions([]);
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('user');
+    sessionStorage.removeItem('permissions');
+    api.setAuthToken(null);
+  }, []);
+
+  const handleAuthSuccess = useCallback(async (data: AuthResponseData) => {
     setToken(data.token);
     api.setAuthToken(data.token);
     
@@ -65,43 +75,46 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
 
     sessionStorage.setItem('token', data.token);
-  };
+  }, [logout]);
   
-  const login = async (email: string, password: string) => {
+  const login = useCallback(async (email: string, password: string) => {
     const response = await api.login(email, password);
     await handleAuthSuccess(response.data);
-  };
+  }, [handleAuthSuccess]);
 
-  const register = async (email: string, username: string, password: string) => {
+  const register = useCallback(async (email: string, username: string, password: string) => {
     const response = await api.register(email, username, password);
     await handleAuthSuccess(response.data);
-  };
+  }, [handleAuthSuccess]);
   
-  const logout = () => {
-    setUser(null);
-    setToken(null);
-    setPermissions([]);
-    sessionStorage.removeItem('token');
-    sessionStorage.removeItem('user');
-    sessionStorage.removeItem('permissions');
-    api.setAuthToken(null);
-  };
-
-  const updateUser = (updatedUserData: Partial<User>) => {
+  const updateUser = useCallback((updatedUserData: Partial<User>) => {
     if (user) {
         const newUser = { ...user, ...updatedUserData };
         setUser(newUser);
         sessionStorage.setItem('user', JSON.stringify(newUser));
     }
-  };
+  }, [user]);
 
-  const hasPermission = (permission: Permission): boolean => {
+  const hasPermission = useCallback((permission: Permission): boolean => {
       return permissions.includes(permission);
-  };
+  }, [permissions]);
 
 
   const isAuthenticated = !!token && !!user;
   const isAdmin = user?.role === 'admin';
+
+  const value = useMemo(() => ({
+    isAuthenticated,
+    user,
+    token,
+    isAdmin,
+    permissions,
+    hasPermission,
+    login,
+    register,
+    logout,
+    updateUser
+  }), [isAuthenticated, user, token, isAdmin, permissions, hasPermission, login, register, logout, updateUser]);
 
   if (isLoading) {
       return (
@@ -112,7 +125,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, token, isAdmin, permissions, hasPermission, login, register, logout, updateUser }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );

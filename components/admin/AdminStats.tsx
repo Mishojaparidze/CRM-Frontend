@@ -1,26 +1,10 @@
-
 import React from 'react';
-import { Card, CardContent } from '../ui/Card';
-// FIX: Use relative path for types
 import { User } from '../../types';
+import { StatCard } from '../ui/StatCard';
 
 interface AdminStatsProps {
   users: User[];
 }
-
-const StatCard: React.FC<{ title: string, value: number | string, icon: React.ReactNode }> = ({ title, value, icon }) => (
-    <Card>
-        <CardContent className="flex items-center justify-between !pt-6">
-            <div>
-                <p className="text-sm font-medium text-dark-text-secondary truncate">{title}</p>
-                <p className="mt-1 text-3xl font-semibold text-dark-text">{value}</p>
-            </div>
-            <div className="flex-shrink-0 h-12 w-12 flex items-center justify-center bg-brand-primary/80 rounded-md text-white">
-                {icon}
-            </div>
-        </CardContent>
-    </Card>
-);
 
 export const AdminStats: React.FC<AdminStatsProps> = ({ users }) => {
   const totalUsers = users.length;

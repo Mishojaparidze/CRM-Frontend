@@ -325,6 +325,24 @@ export const updateIntegration = (id: 'slack' | 'tableau', isConnected: boolean)
     return Promise.reject(new Error("Integration not found"));
 };
 
+export const createPromotion = (data: Omit<Promotion, 'id'>) => {
+    const newPromo: Promotion = { ...data, id: `promo_${Date.now()}` };
+    MOCK_PROMOTIONS.unshift(newPromo); // Add to front
+    return simulateRequest(newPromo);
+};
+export const updatePromotion = (promoId: string, data: Partial<Promotion>) => {
+    const promoIndex = MOCK_PROMOTIONS.findIndex(p => p.id === promoId);
+    if (promoIndex > -1) {
+        MOCK_PROMOTIONS[promoIndex] = { ...MOCK_PROMOTIONS[promoIndex], ...data };
+        return simulateRequest(MOCK_PROMOTIONS[promoIndex]);
+    }
+    return Promise.reject(new Error("Promotion not found"));
+};
+export const deletePromotion = (promoId: string) => {
+    MOCK_PROMOTIONS = MOCK_PROMOTIONS.filter(p => p.id !== promoId);
+    return simulateRequest({ message: "Promotion deleted successfully." });
+};
+
 // --- RISK & FRAUD ---
 export const getRiskAssessmentForUser = (userId: string) => {
     const assessment = MOCK_RISK_ASSESSMENTS[userId];
@@ -335,6 +353,61 @@ export const getRiskAssessmentForUser = (userId: string) => {
     // FIX: Explicitly type the default assessment to fix a type inference issue.
     const defaultAssessment: RiskAssessment = { score: 5, level: 'Low', factors: [] };
     return simulateRequest(defaultAssessment);
+};
+
+export const createUserByAdmin = (email: string, username: string, password: string) => {
+    if (MOCK_USERS.some(u => u.email === email || u.username === username)) {
+        return Promise.reject(new Error("User with that email or username already exists."));
+    }
+    const newUser: User = { 
+        id: `user_${Date.now()}`, 
+        email, 
+        username, 
+        role: 'user', 
+        status: 'active', 
+        kycStatus: 'none', 
+        createdAt: new Date().toISOString(), 
+        lastLoginAt: new Date().toISOString(),
+        tags: [], 
+        isHighRisk: false, 
+        ltv: 0, 
+        ggr: 0, 
+        avgBetSize: 0, 
+        preferences: { language: 'en', timezone: 'UTC', notificationEmail: true, notificationSms: false, notificationPush: true, theme: 'dark' }, 
+        responsibleGaming: { depositLimit: null, lossLimit: null, sessionTimeLimit: null }, 
+        customFields: {}, 
+        riskScore: 5, 
+        has2FA: false, 
+        achievements: [], 
+        loyaltyPoints: 0, 
+        loyaltyTierId: 'tier_bronze' 
+    };
+    MOCK_USERS.push(newUser);
+    return simulateRequest(newUser);
+};
+
+export const performBulkUserAction = (userIds: string[], action: 'suspend' | 'activate' | 'add_tag', payload?: { tag?: string }) => {
+    let updatedCount = 0;
+    MOCK_USERS = MOCK_USERS.map(user => {
+        if (userIds.includes(user.id)) {
+            updatedCount++;
+            switch (action) {
+                case 'suspend':
+                    return { ...user, status: 'suspended' as const };
+                case 'activate':
+                    return { ...user, status: 'active' as const };
+                case 'add_tag':
+                    if (payload?.tag && !user.tags.includes(payload.tag)) {
+                        return { ...user, tags: [...user.tags, payload.tag] };
+                    }
+                    return user;
+                default:
+                    return user;
+            }
+        }
+        return user;
+    });
+    return simulateRequest({ message: `${updatedCount} users updated successfully.` }, 1000);
 };
 
 
@@ -377,12 +450,11 @@ export const getSegments = () => simulateRequest<Segment[]>(MOCK_SEGMENTS);
 export const getSupportTickets = () => simulateRequest<SupportTicket[]>([{ id: 'ticket_1', userId: 'user_1', userUsername: 'PlayerOne', subject: 'Withdrawal issue', description: '...', status: 'Open', priority: 'High', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), assignedToAdminUsername: 'SupportAdmin' }]);
 // FIX: Correctly typed mock return value
 export const getTicketById = (ticketId: string) => simulateRequest<SupportTicket>({ id: ticketId, userId: 'user_1', userUsername: 'PlayerOne', subject: 'Withdrawal issue', description: 'My withdrawal is stuck.', status: 'Open', priority: 'High', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), replies: [] });
-// FIX: Correctly typed mock return value
-export const updateTicket = (ticketId: string, updates: any) => simulateRequest({ id: ticketId, ...updates } as SupportTicket);
+export const updateTicket = (ticketId: string, updates: Partial<SupportTicket>) => simulateRequest({ id: ticketId, ...updates } as SupportTicket);
 export const addTicketReply = (ticketId: string, content: string, isInternal: boolean) => simulateRequest<TicketReply>({ id: `reply_${Date.now()}`, ticketId, authorId: 'admin_1', authorName: 'AdminUser', content, createdAt: new Date().toISOString(), isInternalNote: isInternal });
 export const getEmailTemplates = () => simulateRequest<EmailTemplate[]>([{ id: 'tpl_1', name: 'Welcome Email', subject: 'Welcome to Our Casino!', body: 'Hello {{username}}...', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }]);
-export const createEmailTemplate = (data: any) => simulateRequest<EmailTemplate>({ id: `tpl_${data.name}`, ...data, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
-export const updateEmailTemplate = (templateId: string, data: any) => simulateRequest<EmailTemplate>({ id: templateId, ...data, updatedAt: new Date().toISOString() });
+export const createEmailTemplate = (data: Omit<EmailTemplate, 'id' | 'createdAt' | 'updatedAt'>) => simulateRequest<EmailTemplate>({ id: `tpl_${data.name}`, ...data, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
+export const updateEmailTemplate = (templateId: string, data: Partial<Omit<EmailTemplate, 'id' | 'createdAt' | 'updatedAt'>>) => simulateRequest<EmailTemplate>({ id: templateId, ...data, updatedAt: new Date().toISOString() } as EmailTemplate);
 export const deleteEmailTemplate = (templateId: string) => simulateRequest({ message: 'Template deleted' });
 // FIX: Correctly typed mock return value
 export const getAllGamingActivities = () => simulateRequest<GamingActivity[]>(MOCK_GAMING_ACTIVITIES);
@@ -402,5 +474,6 @@ export default {
     updateTicket, addTicketReply, getEmailTemplates, createEmailTemplate,
     updateEmailTemplate, deleteEmailTemplate, getAllGamingActivities, getGamingActivityForUser,
     ALL_PERMISSIONS, getAffiliates, getAchievements, getMissions, getIntegrations, updateIntegration,
-    getLoyaltyTiers, getPromotions, getRiskAssessmentForUser
+    getLoyaltyTiers, getPromotions, getRiskAssessmentForUser, createUserByAdmin, performBulkUserAction,
+    createPromotion, updatePromotion, deletePromotion,
 };

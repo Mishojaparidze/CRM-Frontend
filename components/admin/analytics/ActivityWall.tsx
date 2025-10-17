@@ -9,6 +9,8 @@ interface ActivityWallProps {
     users: User[];
 }
 
+const ACTIVITY_LIMIT = 5;
+
 export const ActivityWall: React.FC<ActivityWallProps> = ({ activities, users }) => {
 
     const renderActivity = (activity: GamingActivity) => {
@@ -31,7 +33,7 @@ export const ActivityWall: React.FC<ActivityWallProps> = ({ activities, users })
     // Filter for interesting activities and limit to 5
     const recentActivities = activities
         .filter(a => ['deposit', 'win', 'jackpot'].includes(a.type) && a.amount && a.amount > 100)
-        .slice(0, 5);
+        .slice(0, ACTIVITY_LIMIT);
 
     return (
         <Card>

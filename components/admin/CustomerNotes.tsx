@@ -25,6 +25,7 @@ export const CustomerNotes: React.FC<CustomerNotesProps> = ({ user, onUpdate }) 
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuggesting, setIsSuggesting] = useState(false);
+    const [isSummarizing, setIsSummarizing] = useState(false);
     const [error, setError] = useState('');
     const [message, setMessage] = useState('');
     const [suggestedTags, setSuggestedTags] = useState<string[]>([]);
@@ -109,6 +110,34 @@ export const CustomerNotes: React.FC<CustomerNotesProps> = ({ user, onUpdate }) 
         }
     };
 
+    const handleGenerateSummary = async () => {
+        if (notes.length === 0) {
+            setError('There are no notes to summarize.');
+            return;
+        }
+        setIsSummarizing(true);
+        setError('');
+        setMessage('');
+
+        const notesToSummarize = notes.map(note => `- Note by ${note.adminUsername} on ${new Date(note.createdAt).toLocaleDateString()}:\n  "${note.content}"`).join('\n\n');
+        const prompt = `You are a helpful CRM assistant for an online casino. Please summarize the following customer notes into a brief, neutral paragraph. Focus on key issues, repeated complaints, or important resolutions.\n\nHere are the notes:\n${notesToSummarize}`;
+
+        try {
+            const response = await ai.models.generateContent({
+                model: 'gemini-2.5-flash',
+                contents: prompt,
+            });
+            const summary = response.text;
+            setNewNoteContent(`AI Summary:\n---\n${summary}`);
+            setMessage('Summary generated successfully.');
+        } catch (err: any) {
+            setError('Failed to generate summary from AI. ' + (err.message || ''));
+        } finally {
+            setIsSummarizing(false);
+        }
+    };
+
+
     const handleApplyTag = async (tag: string) => {
         if (!hasPermission('can_edit_user_details')) {
             setError('You do not have permission to edit user tags.');
@@ -167,10 +196,15 @@ export const CustomerNotes: React.FC<CustomerNotesProps> = ({ user, onUpdate }) 
                             ))}
                         </div>
                     )}
-                    <div className="flex justify-between items-center">
-                        <Button type="button" variant="secondary" isLoading={isSuggesting} onClick={handleSuggestTags} className="w-auto" disabled={!canManageNotes}>
-                            Suggest Tags
-                        </Button>
+                    <div className="flex justify-between items-center gap-2">
+                        <div className="flex gap-2">
+                            <Button type="button" variant="secondary" isLoading={isSummarizing} onClick={handleGenerateSummary} className="w-auto" disabled={!canManageNotes || notes.length === 0}>
+                                Generate Summary
+                            </Button>
+                            <Button type="button" variant="secondary" isLoading={isSuggesting} onClick={handleSuggestTags} className="w-auto" disabled={!canManageNotes}>
+                                Suggest Tags
+                            </Button>
+                        </div>
                         <Button type="submit" isLoading={isSubmitting} className="w-auto" disabled={!canManageNotes}>
                             Add Note
                         </Button>

@@ -47,7 +47,7 @@ const HighRiskFlag: React.FC = () => (
     </svg>
 )
 
-export const UserTable: React.FC<UserTableProps> = ({ users, onStatusChange, onKycChange, selectedUserIds, onSelectionChange, onSelectAllChange, isAllSelected }) => {
+const UserTableComponent: React.FC<UserTableProps> = ({ users, onStatusChange, onKycChange, selectedUserIds, onSelectionChange, onSelectAllChange, isAllSelected }) => {
   const { hasPermission } = useAuth();
   
   return (
@@ -188,3 +188,4 @@ export const UserTable: React.FC<UserTableProps> = ({ users, onStatusChange, onK
     </Card>
   );
 };
+export const UserTable = React.memo(UserTableComponent);

@@ -91,15 +91,6 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ onClose }) =>
             )}
           </div>
         </form>
-         <style>{`
-          @keyframes fade-in-scale {
-            0% { transform: scale(0.95); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-          }
-          .animate-fade-in-scale {
-            animation: fade-in-scale 0.2s forwards;
-          }
-        `}</style>
       </div>
     </div>
   );
