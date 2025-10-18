@@ -1,4 +1,4 @@
-import React, { Component, ReactNode } from 'react';
+import React, { ReactNode } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/Card';
 
 interface Props {
@@ -10,8 +10,8 @@ interface State {
   error?: Error;
 }
 
-class ErrorBoundary extends Component<Props, State> {
-  // FIX: The error "Property 'props' does not exist on type 'ErrorBoundary'" suggests an issue with component initialization. Reverting from a class property for state to a traditional constructor ensures `super(props)` is called correctly, which initializes `this.props`.
+class ErrorBoundary extends React.Component<Props, State> {
+  // FIX: Re-introduced the constructor to correctly initialize state and ensure `this.props` is available. The previous state property initializer was not correctly recognized in the component's context.
   constructor(props: Props) {
     super(props);
     this.state = {

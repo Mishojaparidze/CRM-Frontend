@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, LoyaltyTier } from '../../types';
+import { User, LoyaltyTier, Promotion } from '../../types';
 import * as api from '../../services/mockApiService';
 import { AdminStats } from './AdminStats';
 import { UserTable } from './UserTable';
@@ -24,6 +24,7 @@ import { BulkActionsBar } from './BulkActionsBar';
 import { Button } from '../ui/Button';
 import { CreateUserModal } from './CreateUserModal';
 import FinancialDashboard from './financials/FinancialDashboard';
+import { AssignPromotionModal } from './promotions/AssignPromotionModal';
 
 type AdminTab = 'customers' | 'analytics' | 'financials' | 'support' | 'promotions' | 'gamification' | 'automation' | 'tasks' | 'settings' | 'platform';
 
@@ -42,6 +43,7 @@ const AdminDashboard: React.FC = () => {
 
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
   const [isCreateUserModalOpen, setCreateUserModalOpen] = useState(false);
+  const [isAssignPromotionModalOpen, setAssignPromotionModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -138,6 +140,12 @@ const AdminDashboard: React.FC = () => {
     api.getAllUsers().then(res => setUsers(res.data)); // refetch
   };
 
+  const handlePromotionAssigned = (count: number, promotionName: string) => {
+    setAssignPromotionModalOpen(false);
+    setMessage(`${count} users have been assigned the "${promotionName}" promotion.`);
+    setSelectedUserIds([]);
+  }
+
   const filteredUsers = React.useMemo(() => {
     if (activeQuickFilter !== 'none') {
       const now = new Date();
@@ -210,6 +218,7 @@ const AdminDashboard: React.FC = () => {
                     selectedCount={selectedUserIds.length}
                     onClearSelection={() => setSelectedUserIds([])}
                     onBulkAction={handleBulkAction}
+                    onAssignPromotion={() => setAssignPromotionModalOpen(true)}
                 />
             )}
             <div className="mt-4">
@@ -266,6 +275,13 @@ const AdminDashboard: React.FC = () => {
   return (
     <>
       {isCreateUserModalOpen && <CreateUserModal onClose={() => setCreateUserModalOpen(false)} onUserCreated={handleUserCreated} />}
+      {isAssignPromotionModalOpen && (
+        <AssignPromotionModal
+            userIds={selectedUserIds}
+            onClose={() => setAssignPromotionModalOpen(false)}
+            onAssign={handlePromotionAssigned}
+        />
+      )}
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>

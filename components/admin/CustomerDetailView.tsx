@@ -24,6 +24,7 @@ import { RiskAssessmentCard } from './risk/RiskAssessmentCard';
 import { TaskManager } from './TaskManager';
 import AccountBalanceCard from './financials/AccountBalanceCard';
 import TransactionTable from './financials/TransactionTable';
+import { PlayerPromotionsManager } from './promotions/PlayerPromotionsManager';
 
 type DetailTab = 'overview' | 'financials' | 'notes' | 'gaming' | 'bonuses' | 'settings' | 'security' | 'privacy';
 
@@ -111,7 +112,12 @@ const CustomerDetailView: React.FC = () => {
              </div>
          );
       case 'bonuses':
-        return <BonusManager userId={user.id} />;
+        return (
+            <div className="space-y-8">
+                <PlayerPromotionsManager userId={user.id} />
+                <BonusManager userId={user.id} />
+            </div>
+        );
       case 'settings':
         return (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -163,7 +169,7 @@ const CustomerDetailView: React.FC = () => {
                     <TabButton tabId="financials" label="Financials" />
                     <TabButton tabId="notes" label="Notes" />
                     <TabButton tabId="gaming" label="Gaming Activity" />
-                    <TabButton tabId="bonuses" label="Bonuses" />
+                    <TabButton tabId="bonuses" label="Bonuses & Promotions" />
                     <TabButton tabId="settings" label="Preferences" />
                     <TabButton tabId="security" label="Security" />
                     <TabButton tabId="privacy" label="Privacy (GDPR)" />

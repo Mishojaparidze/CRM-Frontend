@@ -127,12 +127,14 @@ export interface UserDocument {
     uploadedBy: string; // admin username
 }
 
+export type Currency = 'USD' | 'EUR' | 'GBP' | 'BTC' | 'ETH' | 'USDT';
+
 export interface GamingActivity {
     id: string;
     userId: string;
     type: 'deposit' | 'withdrawal' | 'bet' | 'win' | 'loss' | 'jackpot';
     amount: number;
-    currency: string;
+    currency: Currency;
     game: string;
     timestamp: string;
     status?: 'completed' | 'pending' | 'rejected';
@@ -149,6 +151,42 @@ export interface Bonus {
     grantedAt: string;
     adminUsername: string;
 }
+
+export interface PlayerBonus {
+    id: string;
+    userId: string;
+    type: 'welcome' | 'reload' | 'free_spins' | 'cashback' | 'tournament';
+    name: string;
+    amount: number;
+    currency?: Currency;
+    expiryDate: string;
+    wageringRequirement: {
+        target: number;
+        progress: number;
+    };
+    eligibleGames: string[];
+    status: 'pending' | 'active' | 'completed' | 'expired' | 'forfeited';
+    grantedAt: string;
+    wageringCompletedAt?: string;
+    convertedAmount?: number;
+    source: 'promotion' | 'system';
+    sourceId?: string; // e.g. promotionId
+}
+
+export interface BonusHistoryEvent {
+    id: string;
+    name: string;
+    type: PlayerBonus['type'] | Bonus['type'];
+    status: PlayerBonus['status'] | 'awarded';
+    grantedAt: string;
+    amount: number;
+    currency?: Currency;
+    source: 'Promotion' | 'Manual Grant' | 'System';
+    sourceDetails: string; // Promotion Name or Admin Username
+    conversionRate?: number; // 0-100
+    convertedAmount?: number;
+}
+
 
 export interface AuditLog {
     id: string;
@@ -269,6 +307,23 @@ export interface Promotion {
     status: PromotionStatus;
     bonusCode?: string;
     minDeposit?: number;
+    eligibilityRules: {
+        minLtv?: number;
+        countries?: string[]; // ISO 3166-1 alpha-2 codes
+        loyaltyTiers?: string[]; // Array of LoyaltyTier IDs
+    };
+    performance: {
+        activatedCount: number;
+        completionRate: number; // as a percentage 0-100
+    };
+}
+export interface PlayerPromotion {
+    id: string;
+    userId: string;
+    promotionId: string;
+    promotionName: string;
+    assignedAt: string;
+    status: 'active' | 'completed' | 'expired';
 }
 
 export type RiskLevel = 'Low' | 'Medium' | 'High' | 'Critical';
@@ -334,7 +389,7 @@ export interface Transaction {
     username: string;
     type: 'deposit' | 'withdrawal';
     amount: number;
-    currency: string;
+    currency: Currency;
     status: 'completed' | 'pending' | 'failed';
     timestamp: string;
 }

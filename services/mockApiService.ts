@@ -6,7 +6,8 @@ import {
   UserDocument, GamingActivity, Bonus, AuditLog, TimelineEvent, Segment,
   SupportTicket, TicketReply, EmailTemplate, IPWhitelistEntry, ABTest, ApiKey,
   Integration, LoyaltyTier, Promotion, RiskAssessment, WorkflowRule, Task,
-  Affiliate, Achievement, Mission, Transaction, RGLimits, UserPreferences
+  Affiliate, Achievement, Mission, Transaction, RGLimits, UserPreferences,
+  PlayerBonus, Currency, PlayerPromotion, BonusHistoryEvent
 } from '../types';
 
 // MOCK DATABASE
@@ -18,6 +19,7 @@ let ADMIN_ROLES: AdminRole[] = [];
 let DOCUMENTS: UserDocument[] = [];
 let GAMING_ACTIVITIES: GamingActivity[] = [];
 let BONUSES: Bonus[] = [];
+let PLAYER_BONUSES: PlayerBonus[] = [];
 let AUDIT_LOGS: AuditLog[] = [];
 let SUPPORT_TICKETS: SupportTicket[] = [];
 let EMAIL_TEMPLATES: EmailTemplate[] = [];
@@ -27,6 +29,7 @@ let API_KEYS: ApiKey[] = [];
 let INTEGRATIONS: Integration[] = [];
 let LOYALTY_TIERS: LoyaltyTier[] = [];
 let PROMOTIONS: Promotion[] = [];
+let PLAYER_PROMOTIONS: PlayerPromotion[] = [];
 let RISK_ASSESSMENTS: RiskAssessment[] = [];
 let WORKFLOW_RULES: WorkflowRule[] = [];
 let TASKS: Task[] = [];
@@ -136,7 +139,112 @@ const initMockData = () => {
   SUPPORT_TICKETS = [
       { id: 'ticket_1', subject: 'Problem with my withdrawal', description: 'I requested a withdrawal 3 days ago and it is still pending.', userId: 'user_1', userUsername: 'Player1', status: 'Open', priority: 'High', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), replies: [] },
       { id: 'ticket_2', subject: 'Bonus not credited', description: 'I used the code WELCOME100 but did not receive the bonus.', userId: 'user_2', userUsername: 'Player2', status: 'Pending', priority: 'Medium', createdAt: new Date(Date.now() - 86400000).toISOString(), updatedAt: new Date().toISOString(), assignedToAdminId: 'admin_1', assignedToAdminUsername: 'superadmin', replies: [] }
-  ]
+  ];
+
+  const now = new Date();
+  PLAYER_BONUSES = [
+      {
+          id: 'pbonus_1',
+          userId: 'user_1',
+          type: 'welcome',
+          name: '100% Welcome Bonus',
+          amount: 50,
+          currency: 'USD',
+          expiryDate: new Date(now.getTime() + 14 * 86400000).toISOString(),
+          wageringRequirement: { target: 1500, progress: 450 },
+          eligibleGames: ['Starburst', 'Book of Dead', 'Gonzo\'s Quest'],
+          status: 'active',
+          grantedAt: new Date(now.getTime() - 2 * 86400000).toISOString(),
+          source: 'promotion',
+          sourceId: 'promo_1'
+      },
+      {
+          id: 'pbonus_2',
+          userId: 'user_1',
+          type: 'free_spins',
+          name: '50 Free Spins on Starburst',
+          amount: 50,
+          expiryDate: new Date(now.getTime() + 5 * 86400000).toISOString(),
+          wageringRequirement: { target: 200, progress: 200 },
+          eligibleGames: ['Starburst'],
+          status: 'completed',
+          grantedAt: new Date(now.getTime() - 30 * 86400000).toISOString(),
+          wageringCompletedAt: new Date(now.getTime() - 28 * 86400000).toISOString(),
+          convertedAmount: 15.75,
+          source: 'system'
+      },
+      {
+          id: 'pbonus_3',
+          userId: 'user_2',
+          type: 'reload',
+          name: 'Weekend Reload',
+          amount: 25,
+          currency: 'USD',
+          expiryDate: new Date(now.getTime() - 1 * 86400000).toISOString(),
+          wageringRequirement: { target: 750, progress: 100 },
+          eligibleGames: ['All Slots'],
+          status: 'expired',
+          grantedAt: new Date(now.getTime() - 8 * 86400000).toISOString(),
+          source: 'promotion',
+          sourceId: 'promo_2'
+      },
+       {
+          id: 'pbonus_4',
+          userId: 'user_3',
+          type: 'cashback',
+          name: '10% Weekly Cashback',
+          amount: 15.50,
+          currency: 'USD',
+          expiryDate: new Date(now.getTime() + 1 * 86400000).toISOString(),
+          wageringRequirement: { target: 15.50, progress: 0 },
+          eligibleGames: ['N/A'],
+          status: 'pending',
+          grantedAt: new Date(now.getTime() - 3600000).toISOString(),
+          source: 'system'
+      },
+      {
+        id: 'pbonus_5',
+        userId: 'user_1',
+        type: 'reload',
+        name: 'High Roller Reload',
+        amount: 200,
+        currency: 'USD',
+        expiryDate: new Date(now.getTime() - 10 * 86400000).toISOString(),
+        wageringRequirement: { target: 8000, progress: 8000 },
+        eligibleGames: ['All Slots'],
+        status: 'completed',
+        grantedAt: new Date(now.getTime() - 45 * 86400000).toISOString(),
+        wageringCompletedAt: new Date(now.getTime() - 40 * 86400000).toISOString(),
+        convertedAmount: 450.00,
+        source: 'promotion',
+        sourceId: 'promo_3'
+      },
+      {
+        id: 'pbonus_6',
+        userId: 'user_4',
+        type: 'welcome',
+        name: 'Welcome Spins',
+        amount: 20,
+        expiryDate: new Date(now.getTime() - 20 * 86400000).toISOString(),
+        wageringRequirement: { target: 100, progress: 50 },
+        eligibleGames: ['Book of Dead'],
+        status: 'forfeited',
+        grantedAt: new Date(now.getTime() - 25 * 86400000).toISOString(),
+        source: 'promotion',
+        sourceId: 'promo_1'
+      }
+  ];
+  
+  BONUSES.push({ id: randomId('bonus'), userId: 'user_1', type: 'Cash Credit', amount: 20, reason: 'Service recovery for downtime.', grantedAt: new Date(now.getTime() - 5 * 86400000).toISOString(), adminUsername: 'superadmin'});
+  BONUSES.push({ id: randomId('bonus'), userId: 'user_2', type: 'Free Spins', amount: 100, reason: 'Birthday gift.', grantedAt: new Date(now.getTime() - 40 * 86400000).toISOString(), adminUsername: 'superadmin'});
+
+
+   PROMOTIONS = [
+        {id: 'promo_1', name: 'Welcome Bonus', description: '100% match on first deposit up to $100.', type: 'Deposit Match', startDate: new Date(now.getTime() - 86400000 * 10).toISOString(), endDate: new Date(now.getTime() + 86400000 * 20).toISOString(), status: 'Active', bonusCode: 'WELCOME100', minDeposit: 20, eligibilityRules: { countries: ['US', 'CA'], minLtv: 0 }, performance: { activatedCount: 125, completionRate: 45 } },
+        {id: 'promo_2', name: 'Summer Spins', description: '50 free spins on weekends for Gold+ tier players.', type: 'Free Spins Offer', startDate: new Date(now.getTime() + 86400000 * 5).toISOString(), endDate: new Date(now.getTime() + 86400000 * 35).toISOString(), status: 'Scheduled', eligibilityRules: { loyaltyTiers: ['tier_3', 'tier_4'] }, performance: { activatedCount: 0, completionRate: 0 } },
+        {id: 'promo_3', name: 'High Roller Cashback', description: '15% weekly cashback for high rollers.', type: 'Cashback Offer', startDate: new Date(now.getTime() - 86400000 * 5).toISOString(), endDate: new Date(now.getTime() + 86400000 * 25).toISOString(), status: 'Active', eligibilityRules: { minLtv: 5000 }, performance: { activatedCount: 12, completionRate: 90 } },
+        {id: 'promo_4', name: 'Expired Test Promo', description: 'This was a test.', type: 'Deposit Match', startDate: new Date(now.getTime() - 86400000 * 10).toISOString(), endDate: new Date(now.getTime() - 86400000 * 1).toISOString(), status: 'Expired', bonusCode: 'EXPIRED', eligibilityRules: {}, performance: { activatedCount: 5, completionRate: 20 } },
+    ];
 };
 
 initMockData();
@@ -637,17 +745,11 @@ export const getMissions = async (): Promise<{data: Mission[]}> => {
 }
 export const getPromotions = async (): Promise<{data: Promotion[]}> => {
     await apiDelay();
-    if(PROMOTIONS.length === 0) {
-        PROMOTIONS = [
-            {id: 'promo_1', name: 'Welcome Bonus', description: '100% match on first deposit', type: 'Deposit Match', startDate: new Date(Date.now() - 86400000 * 10).toISOString(), endDate: new Date(Date.now() + 86400000 * 20).toISOString(), status: 'Active' },
-            {id: 'promo_2', name: 'Summer Spins', description: '50 free spins on weekends', type: 'Free Spins Offer', startDate: new Date(Date.now() + 86400000 * 5).toISOString(), endDate: new Date(Date.now() + 86400000 * 35).toISOString(), status: 'Scheduled' },
-        ];
-    }
     return { data: PROMOTIONS };
 }
-export const createPromotion = async(data: Omit<Promotion, 'id'>): Promise<{data: Promotion}> => {
+export const createPromotion = async(data: Omit<Promotion, 'id'|'performance'>): Promise<{data: Promotion}> => {
     await apiDelay();
-    const newPromo = { ...data, id: randomId('promo') };
+    const newPromo = { ...data, id: randomId('promo'), performance: { activatedCount: 0, completionRate: 0 } };
     PROMOTIONS.push(newPromo);
     return { data: newPromo };
 }
@@ -720,4 +822,105 @@ export const updateTransactionStatus = async (transactionId: string, status: 'co
     if (!transaction) throw new Error('Transaction not found.');
     transaction.status = status;
     return { data: transaction };
+};
+
+export const getPlayerBonuses = async (userId: string): Promise<{ data: PlayerBonus[] }> => {
+    await apiDelay();
+    return { data: PLAYER_BONUSES.filter(b => b.userId === userId).sort((a,b) => new Date(b.grantedAt).getTime() - new Date(a.grantedAt).getTime()) };
+}
+
+export const getPlayerPromotions = async (userId: string): Promise<{ data: PlayerPromotion[] }> => {
+    await apiDelay();
+    return { data: PLAYER_PROMOTIONS.filter(p => p.userId === userId) };
+}
+
+export const assignPromotionToUser = async (userId: string, promotionId: string): Promise<{ data: PlayerPromotion }> => {
+    await apiDelay();
+    const promotion = PROMOTIONS.find(p => p.id === promotionId);
+    if (!promotion) throw new Error('Promotion not found');
+    if (PLAYER_PROMOTIONS.some(p => p.userId === userId && p.promotionId === promotionId)) {
+        throw new Error('User already has this promotion.');
+    }
+    const newPlayerPromo: PlayerPromotion = {
+        id: randomId('pp'),
+        userId,
+        promotionId,
+        promotionName: promotion.name,
+        assignedAt: new Date().toISOString(),
+        status: 'active'
+    };
+    PLAYER_PROMOTIONS.push(newPlayerPromo);
+    promotion.performance.activatedCount++;
+    return { data: newPlayerPromo };
+};
+
+export const assignPromotionToUsers = async (userIds: string[], promotionId: string): Promise<{ message: string }> => {
+    await apiDelay(1000); // Simulate longer delay for bulk action
+    const promotion = PROMOTIONS.find(p => p.id === promotionId);
+    if (!promotion) throw new Error('Promotion not found');
+    
+    let assignedCount = 0;
+    userIds.forEach(userId => {
+        if (!PLAYER_PROMOTIONS.some(p => p.userId === userId && p.promotionId === promotionId)) {
+             const newPlayerPromo: PlayerPromotion = {
+                id: randomId('pp'),
+                userId,
+                promotionId,
+                promotionName: promotion.name,
+                assignedAt: new Date().toISOString(),
+                status: 'active'
+            };
+            PLAYER_PROMOTIONS.push(newPlayerPromo);
+            assignedCount++;
+        }
+    });
+    
+    promotion.performance.activatedCount += assignedCount;
+    return { message: `Promotion assigned to ${assignedCount} new users.` };
+}
+
+export const getComprehensiveBonusHistory = async (userId: string): Promise<{ data: BonusHistoryEvent[] }> => {
+    await apiDelay();
+    const userPlayerBonuses = PLAYER_BONUSES.filter(b => b.userId === userId);
+    const userManualBonuses = BONUSES.filter(b => b.userId === userId);
+
+    const history: BonusHistoryEvent[] = [];
+
+    userPlayerBonuses.forEach(b => {
+        const conversionRate = (b.status === 'completed' && b.amount > 0 && b.convertedAmount)
+            ? (b.convertedAmount / b.amount) * 100
+            : undefined;
+
+        history.push({
+            id: b.id,
+            name: b.name,
+            type: b.type,
+            status: b.status,
+            grantedAt: b.grantedAt,
+            amount: b.amount,
+            currency: b.currency,
+            source: b.source === 'promotion' ? 'Promotion' : 'System',
+            sourceDetails: b.source === 'promotion' 
+                ? PROMOTIONS.find(p => p.id === b.sourceId)?.name || 'Unknown Promotion' 
+                : 'System Award',
+            conversionRate: conversionRate,
+            convertedAmount: b.convertedAmount,
+        });
+    });
+    
+    userManualBonuses.forEach(b => {
+        history.push({
+            id: b.id,
+            name: b.reason,
+            type: b.type,
+            status: 'awarded',
+            grantedAt: b.grantedAt,
+            amount: b.amount,
+            currency: 'USD', // Assume USD for manual credits
+            source: 'Manual Grant',
+            sourceDetails: b.adminUsername,
+        });
+    });
+
+    return { data: history.sort((a, b) => new Date(b.grantedAt).getTime() - new Date(a.grantedAt).getTime()) };
 };

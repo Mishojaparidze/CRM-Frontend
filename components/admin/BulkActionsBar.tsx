@@ -6,9 +6,10 @@ interface BulkActionsBarProps {
     selectedCount: number;
     onClearSelection: () => void;
     onBulkAction: (action: 'suspend' | 'activate' | 'add_tag', payload?: { tag?: string }) => void;
+    onAssignPromotion: () => void;
 }
 
-export const BulkActionsBar: React.FC<BulkActionsBarProps> = ({ selectedCount, onClearSelection, onBulkAction }) => {
+export const BulkActionsBar: React.FC<BulkActionsBarProps> = ({ selectedCount, onClearSelection, onBulkAction, onAssignPromotion }) => {
     const [showTagInput, setShowTagInput] = useState(false);
     const [tag, setTag] = useState('');
 
@@ -37,6 +38,7 @@ export const BulkActionsBar: React.FC<BulkActionsBarProps> = ({ selectedCount, o
                     <Button variant="secondary" onClick={() => onBulkAction('activate')} className="w-auto">Activate</Button>
                     <Button variant="secondary" onClick={() => onBulkAction('suspend')} className="w-auto">Suspend</Button>
                     <Button variant="secondary" onClick={() => setShowTagInput(true)} className="w-auto">Add Tag</Button>
+                    <Button variant="secondary" onClick={onAssignPromotion} className="w-auto">Assign Promotion</Button>
                 </div>
             )}
             <button onClick={onClearSelection} className="text-sm text-brand-secondary hover:underline">Clear selection</button>

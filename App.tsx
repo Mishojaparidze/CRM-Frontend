@@ -10,18 +10,8 @@ import ResetPasswordPage from './components/ResetPasswordPage';
 import SupportTicketDetailView from './components/admin/SupportTicketDetailView';
 import ErrorBoundary from './components/ErrorBoundary';
 
-const App: React.FC = () => {
-  return (
-    <AuthProvider>
-      <HashRouter>
-        <ErrorBoundary>
-          <Main />
-        </ErrorBoundary>
-      </HashRouter>
-    </AuthProvider>
-  );
-};
-
+// FIX: Moved the Main component definition before the App component.
+// This resolves a potential TypeScript issue where the component was used before its declaration was fully processed.
 const Main: React.FC = () => {
   const { isAuthenticated, isAdmin } = useAuth();
   
@@ -40,6 +30,18 @@ const Main: React.FC = () => {
       />
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <AuthProvider>
+      <HashRouter>
+        <ErrorBoundary>
+          <Main />
+        </ErrorBoundary>
+      </HashRouter>
+    </AuthProvider>
   );
 };
 

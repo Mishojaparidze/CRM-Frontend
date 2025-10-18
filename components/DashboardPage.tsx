@@ -6,6 +6,7 @@ import UserProfile from './UserProfile';
 import WalletManager from './WalletManager';
 import AdminDashboard from './admin/AdminDashboard';
 import ChangePassword from './ChangePassword';
+import BonusTracker from './BonusTracker';
 
 const DashboardPage: React.FC = () => {
   const { user } = useAuth();
@@ -32,7 +33,8 @@ const DashboardPage: React.FC = () => {
                   <UserProfile />
                   <ChangePassword />
                 </div>
-                <div className="lg:col-span-3">
+                <div className="lg:col-span-3 space-y-8">
+                  <BonusTracker userId={user.id} />
                   <WalletManager userId={user.id} />
                 </div>
               </div>
